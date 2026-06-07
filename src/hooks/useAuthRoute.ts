@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 export type AuthMode = 'signup' | 'login';
 
 /** Either the marketing landing page or the auth screen in one of its modes. */
-export type Route = { view: 'landing' } | { view: 'auth'; mode: AuthMode };
+export type Route = { view: 'landing' } | { view: 'auth'; mode: AuthMode } | { view: 'app' };
 
 /**
  * Hash routing mirrors the prototype's `#signup` / `#login` modes without
@@ -13,6 +13,9 @@ export type Route = { view: 'landing' } | { view: 'auth'; mode: AuthMode };
  */
 function parse(): Route {
   const hash = window.location.hash;
+  if (hash.startsWith('#/app')) {
+    return { view: 'app' };
+  }
   if (hash.startsWith('#/auth')) {
     return { view: 'auth', mode: hash === '#/auth/login' ? 'login' : 'signup' };
   }

@@ -7,6 +7,7 @@ import styles from './AuthScreen.module.css';
 interface AuthScreenProps {
   /** Mode the screen opens in, derived from the route (`#/auth` vs `#/auth/login`). */
   initialMode: AuthMode;
+  onSuccess: () => void;
 }
 
 /**
@@ -15,7 +16,7 @@ interface AuthScreenProps {
  * scoped to this screen (see the module), so the landing page keeps its own
  * coral + Fredoka system.
  */
-export default function AuthScreen({ initialMode }: AuthScreenProps) {
+export default function AuthScreen({ initialMode, onSuccess }: AuthScreenProps) {
   const [mode, setMode] = useState<AuthMode>(initialMode);
 
   // Resync when the screen is opened via a different link while already mounted.
@@ -38,7 +39,7 @@ export default function AuthScreen({ initialMode }: AuthScreenProps) {
   return (
     <div className={styles.auth}>
       <BrandPanel />
-      <AuthForm mode={mode} onModeChange={changeMode} />
+      <AuthForm mode={mode} onModeChange={changeMode} onSuccess={onSuccess} />
     </div>
   );
 }

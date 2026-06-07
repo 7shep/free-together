@@ -1,5 +1,7 @@
 import { useEffect } from 'react';
 import { useScrollReveal } from '../hooks/useScrollReveal';
+import { isSupabaseConfigured } from '../lib/supabase';
+import LocalSetupNotice from './LocalSetupNotice';
 import Footer from './layout/Footer';
 import Nav from './layout/Nav';
 import ClosingCTA from './sections/ClosingCTA';
@@ -19,6 +21,7 @@ export default function Landing() {
     <>
       <Nav />
       <main id="top">
+        {!isSupabaseConfigured && <LocalSetupNotice />}
         <Hero />
         <HowItWorks />
         <Features />
