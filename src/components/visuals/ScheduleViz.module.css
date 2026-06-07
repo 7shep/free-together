@@ -1,0 +1,18 @@
+.sched {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+  padding: 14px;
+  height: 100%;
+}
+.col {
+  position: relative;
+  background: color-mix(in srgb, var(--ink) 6%, transparent);
+  border-radius: 6px;
+}
+.blk {
+  position: absolute;
+  left: 3px;
+  right: 3px;
+  border-radius: 4px;
+}

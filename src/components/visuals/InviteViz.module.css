@@ -1,0 +1,23 @@
+.invite {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 11px;
+  height: 100%;
+}
+.link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--surface);
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  padding: 0.45em 0.85em;
+  font-weight: 600;
+  font-size: 0.82rem;
+  box-shadow: var(--shadow-sm);
+}
+.lk {
+  color: var(--ink-soft);
+}

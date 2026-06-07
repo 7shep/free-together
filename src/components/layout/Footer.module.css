@@ -1,0 +1,34 @@
+.ft {
+  border-top: 2.5px solid var(--ink);
+  padding: 34px 0;
+}
+.inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.2rem;
+}
+.links {
+  display: flex;
+  gap: 26px;
+  font-weight: 600;
+  font-size: 0.96rem;
+  color: var(--ink-soft);
+}
+.links a:hover {
+  color: var(--ink);
+}
+.copy {
+  color: var(--ink-soft);
+  font-weight: 500;
+  font-size: 0.92rem;
+}

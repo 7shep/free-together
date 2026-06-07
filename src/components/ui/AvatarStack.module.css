@@ -1,0 +1,6 @@
+.stack {
+  display: flex;
+}
+.stack > :not(:first-child) {
+  margin-left: var(--ov, -9px);
+}

@@ -1,0 +1,62 @@
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  font-family: var(--font-display), sans-serif;
+  font-weight: 600;
+  font-size: 1.05rem;
+  padding: 0.72em 1.35em;
+  border: var(--border) solid var(--ink);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition:
+    transform 0.12s cubic-bezier(0.3, 0.8, 0.4, 1),
+    box-shadow 0.12s;
+  white-space: nowrap;
+}
+.btn:hover {
+  transform: translate(-1px, -2px);
+  box-shadow: 5px 6px 0 var(--ink);
+}
+.btn:active {
+  transform: translate(1px, 2px);
+  box-shadow: 1px 1px 0 var(--ink);
+}
+
+.primary {
+  background: var(--primary);
+  color: var(--primary-ink);
+  border-color: var(--ink);
+}
+
+.ghost {
+  background: transparent;
+  box-shadow: none;
+}
+.ghost:hover {
+  background: color-mix(in srgb, var(--ink) 7%, transparent);
+  box-shadow: none;
+  transform: translateY(-1px);
+}
+
+.lg {
+  font-size: 1.18rem;
+  padding: 0.85em 1.7em;
+}
+
+/* On the dark closing-CTA card the outline tracks the card background. */
+.onDark {
+  border-color: var(--bg);
+}
+.onDark:not(.primary) {
+  background: transparent;
+  color: var(--bg);
+}
+.onDark.primary {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--bg);
+}

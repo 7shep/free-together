@@ -1,0 +1,149 @@
+/* ─────────────── Design tokens ─────────────── */
+:root {
+  --bg: #fff9f0;
+  --surface: #ffffff;
+  --ink: #241c3b;
+  --ink-soft: #615a78;
+  --coral: #ff5d5d;
+  --sun: #ffc93c;
+  --mint: #22ce9c;
+  --violet: #6c5ce7;
+  --sky: #46a8ff;
+  --pink: #ff7ac6;
+  --free: #1fc98c;
+  --primary: #ff5d5d;
+  --primary-ink: #ffffff;
+
+  --radius: 20px;
+  --radius-sm: 13px;
+  --border: 2.5px;
+  --shadow-x: 5px;
+  --shadow-y: 6px;
+  --shadow: var(--shadow-x) var(--shadow-y) 0 var(--ink);
+  --shadow-sm: 3px 3px 0 var(--ink);
+
+  --font-display: 'Fredoka';
+  --font-body: 'Plus Jakarta Sans';
+  --maxw: 1180px;
+}
+
+/* Alternate palettes (set on <html data-theme>). No switcher ships today,
+   but the variants are kept here so a theme toggle can be added later. */
+html[data-theme='sunset'] {
+  --bg: #fff4ec;
+  --ink: #3a1e22;
+  --ink-soft: #7a5a52;
+  --coral: #ff6b4a;
+  --sun: #ffb23e;
+  --mint: #f0a341;
+  --violet: #e2604e;
+  --sky: #ff8a5b;
+  --pink: #ff9e7d;
+  --free: #f2913c;
+  --primary: #ff6b4a;
+}
+html[data-theme='cool'] {
+  --bg: #f2f7fb;
+  --ink: #13243b;
+  --ink-soft: #4d627d;
+  --coral: #3e8bff;
+  --sun: #36c6d6;
+  --mint: #19c7a6;
+  --violet: #6e6bf5;
+  --sky: #54b0ff;
+  --pink: #7ca0ff;
+  --free: #19c7a6;
+  --primary: #3e8bff;
+}
+html[data-theme='candy'] {
+  --bg: #fff2f8;
+  --ink: #34163a;
+  --ink-soft: #76547a;
+  --coral: #ff5da8;
+  --sun: #ffc247;
+  --mint: #37d6b0;
+  --violet: #9b5cff;
+  --sky: #5fb6ff;
+  --pink: #ff7ac6;
+  --free: #37d6b0;
+  --primary: #9b5cff;
+}
+
+/* Shape: soft mode flips hard shadows to soft. */
+html[data-shape='soft'] {
+  --shadow: 0 16px 34px -14px color-mix(in srgb, var(--ink) 55%, transparent);
+  --shadow-sm: 0 8px 18px -8px color-mix(in srgb, var(--ink) 50%, transparent);
+  --border: 1.5px;
+}
+
+/* ─────────────── Base ─────────────── */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+html {
+  scroll-behavior: smooth;
+}
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body), system-ui, sans-serif;
+  font-size: 17px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+h1,
+h2,
+h3,
+.display {
+  font-family: var(--font-display), system-ui, sans-serif;
+  line-height: 1.02;
+  letter-spacing: -0.01em;
+}
+a {
+  color: inherit;
+  text-decoration: none;
+}
+::selection {
+  background: var(--sun);
+  color: var(--ink);
+}
+
+/* ─────────────── Layout utility ─────────────── */
+.wrap {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 0 28px;
+}
+
+/* ─────────────── Reveal on scroll ─────────────── */
+.reveal {
+  opacity: 0;
+  transform: translateY(22px);
+  transition:
+    opacity 0.6s ease,
+    transform 0.6s cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+.reveal.in {
+  opacity: 1;
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* ─────────────── Responsive base ─────────────── */
+@media (max-width: 560px) {
+  body {
+    font-size: 16px;
+  }
+  .wrap {
+    padding: 0 18px;
+  }
+}

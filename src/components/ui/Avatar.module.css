@@ -1,0 +1,10 @@
+.av {
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-family: var(--font-display);
+  font-weight: 600;
+  border: 2.5px solid var(--surface);
+  flex: none;
+}

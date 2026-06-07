@@ -1,0 +1,70 @@
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: color-mix(in srgb, var(--bg) 86%, transparent);
+  backdrop-filter: blur(10px);
+  border-bottom: 2.5px solid transparent;
+}
+.scrolled {
+  border-bottom-color: var(--ink);
+}
+.inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 76px;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.4rem;
+}
+.links {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+  font-weight: 600;
+  font-size: 1rem;
+}
+.cta {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+/* Animated underline shared by the nav links and the "Log in" link. */
+.link {
+  position: relative;
+  font-weight: 600;
+}
+.link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -5px;
+  height: 2.5px;
+  background: var(--primary);
+  border-radius: 2px;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.18s;
+}
+.link:hover::after {
+  transform: scaleX(1);
+}
+
+@media (max-width: 920px) {
+  .links {
+    display: none;
+  }
+}
+@media (max-width: 560px) {
+  .full {
+    display: none;
+  }
+}

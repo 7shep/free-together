@@ -1,0 +1,89 @@
+.features {
+  padding: 30px 0 96px;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 22px;
+}
+.feat {
+  border: var(--border) solid var(--ink);
+  border-radius: var(--radius);
+  padding: 26px;
+  box-shadow: var(--shadow);
+  position: relative;
+  overflow: hidden;
+}
+.fi {
+  width: 54px;
+  height: 54px;
+  border-radius: 15px;
+  border: 2.5px solid var(--ink);
+  display: grid;
+  place-items: center;
+  margin-bottom: 18px;
+  box-shadow: var(--shadow-sm);
+}
+.feat h3 {
+  font-size: 1.32rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.feat p {
+  color: var(--ink-soft);
+  font-weight: 500;
+  font-size: 1.01rem;
+}
+
+.big {
+  grid-column: span 6;
+}
+.small {
+  grid-column: span 3;
+}
+
+/* Card tints */
+.fMint {
+  background: color-mix(in srgb, var(--mint) 16%, var(--surface));
+}
+.fSun {
+  background: color-mix(in srgb, var(--sun) 20%, var(--surface));
+}
+.fSky {
+  background: color-mix(in srgb, var(--sky) 15%, var(--surface));
+}
+.fPink {
+  background: color-mix(in srgb, var(--pink) 16%, var(--surface));
+}
+.fViolet {
+  background: color-mix(in srgb, var(--violet) 14%, var(--surface));
+}
+
+/* Icon chip fills */
+.iMint {
+  background: var(--mint);
+}
+.iSun {
+  background: var(--sun);
+}
+.iSky {
+  background: var(--sky);
+}
+.iPink {
+  background: var(--pink);
+}
+.iViolet {
+  background: var(--violet);
+}
+
+@media (max-width: 920px) {
+  .big,
+  .small {
+    grid-column: span 12;
+  }
+}
+@media (max-width: 560px) {
+  .grid {
+    gap: 16px;
+  }
+}
