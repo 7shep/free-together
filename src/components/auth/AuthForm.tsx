@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useRef, useState, type FormEvent } from 'react';
 import type { AuthMode } from '../../hooks/useAuthRoute';
 import { isSupabaseConfigured, requireSupabase } from '../../lib/supabase';
 import LocalSetupNotice from '../LocalSetupNotice';
@@ -161,6 +161,7 @@ export default function AuthForm({ mode, onModeChange, onSuccess }: AuthFormProp
             <div className={styles.inp}>
               <MailIcon />
               <input
+                ref={emailRef}
                 id="auth-email"
                 type="email"
                 placeholder="you@email.com"
@@ -177,6 +178,7 @@ export default function AuthForm({ mode, onModeChange, onSuccess }: AuthFormProp
             <div className={styles.inp}>
               <LockIcon />
               <input
+                ref={passwordRef}
                 id="auth-password"
                 type={showPassword ? 'text' : 'password'}
                 placeholder="••••••••"

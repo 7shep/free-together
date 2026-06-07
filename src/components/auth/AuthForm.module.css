@@ -300,3 +300,9 @@
     max-width: 100%;
   }
 }
+
+.error {
+  font-size: 0.8rem;
+  color: #e05252;
+  margin: -4px 0 8px;
+}
