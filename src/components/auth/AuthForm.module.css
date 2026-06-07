@@ -1,0 +1,316 @@
+.formside {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 28px;
+}
+
+.back {
+  position: absolute;
+  top: 26px;
+  left: 28px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--ink-soft);
+}
+.back:hover {
+  color: var(--ink);
+}
+
+.wrap {
+  width: 100%;
+  max-width: 392px;
+}
+
+/* Segmented sign-up / log-in tab with a sliding pill thumb. */
+.tabs {
+  position: relative;
+  display: flex;
+  margin-bottom: 28px;
+  padding: 5px;
+  background: color-mix(in srgb, var(--ink) 8%, transparent);
+  border-radius: 999px;
+}
+.thumb {
+  position: absolute;
+  top: 5px;
+  bottom: 5px;
+  left: 5px;
+  width: calc(50% - 5px);
+  background: var(--surface);
+  border: 2.5px solid var(--ink);
+  border-radius: 999px;
+  box-shadow: var(--shadow-sm);
+  transform: translateX(0);
+  transition: transform 0.22s cubic-bezier(0.3, 0.8, 0.4, 1);
+}
+.thumbLogin {
+  transform: translateX(100%);
+}
+.tab {
+  position: relative;
+  z-index: 2;
+  flex: 1;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  padding: 0.6em 0;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.02rem;
+  color: var(--ink-soft);
+}
+.tabActive {
+  color: var(--ink);
+}
+
+.head {
+  margin-bottom: 24px;
+}
+.head h2 {
+  font-size: clamp(1.7rem, 3vw, 2.2rem);
+  font-weight: 700;
+}
+.head p {
+  margin-top: 8px;
+  font-weight: 500;
+  color: var(--ink-soft);
+}
+
+/* Social sign-in */
+.social {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.sbtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 11px;
+  width: 100%;
+  padding: 0.82em 1em;
+  background: var(--surface);
+  border: var(--border) solid var(--ink);
+  border-radius: 14px;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1rem;
+  transition:
+    transform 0.12s cubic-bezier(0.3, 0.8, 0.4, 1),
+    box-shadow 0.12s;
+}
+.sbtn:hover {
+  transform: translate(-1px, -2px);
+  box-shadow: 5px 6px 0 var(--ink);
+}
+.sbtn:active {
+  transform: translate(1px, 2px);
+  box-shadow: 1px 1px 0 var(--ink);
+}
+.sbtn svg {
+  flex: none;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 22px 0;
+  color: var(--ink-soft);
+  font-weight: 600;
+  font-size: 0.84rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  height: 2px;
+  background: color-mix(in srgb, var(--ink) 14%, transparent);
+  border-radius: 2px;
+}
+
+/* Email / password fields */
+.field {
+  margin-bottom: 15px;
+}
+.field label {
+  display: block;
+  margin-bottom: 7px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+.inp {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  background: var(--surface);
+  border: var(--border) solid var(--ink);
+  border-radius: 13px;
+  transition:
+    box-shadow 0.14s,
+    transform 0.12s;
+}
+.inp:focus-within {
+  box-shadow: var(--shadow-sm);
+}
+.inp svg {
+  flex: none;
+  color: var(--ink-soft);
+}
+.inp input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.85em 0;
+  border: 0;
+  background: transparent;
+  outline: none;
+  font-size: 1rem;
+  color: var(--ink);
+}
+.inp input::placeholder {
+  color: color-mix(in srgb, var(--ink-soft) 80%, transparent);
+}
+.togglePw {
+  padding: 4px;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  color: var(--ink-soft);
+  font-weight: 600;
+  font-size: 0.84rem;
+}
+.togglePw:hover {
+  color: var(--ink);
+}
+
+/* Remember me + forgot password (log-in only) */
+.rowBetween {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: -2px 0 20px;
+}
+.remember {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  cursor: pointer;
+  user-select: none;
+  font-weight: 500;
+  font-size: 0.92rem;
+  color: var(--ink-soft);
+}
+.remember input {
+  position: absolute;
+  width: 0;
+  height: 0;
+  opacity: 0;
+}
+.box {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  background: var(--surface);
+  border: 2.5px solid var(--ink);
+  border-radius: 7px;
+  transition: background 0.12s;
+}
+.box svg {
+  opacity: 0;
+  transition: opacity 0.12s;
+}
+.remember input:checked + .box {
+  background: var(--free);
+}
+.remember input:checked + .box svg {
+  opacity: 1;
+}
+.forgot {
+  font-weight: 600;
+  font-size: 0.92rem;
+  color: var(--primary);
+}
+.forgot:hover {
+  text-decoration: underline;
+}
+
+/* Submit */
+.submit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+  width: 100%;
+  padding: 0.92em 1em;
+  background: var(--primary);
+  color: var(--primary-ink);
+  border: var(--border) solid var(--ink);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.12rem;
+  transition:
+    transform 0.12s cubic-bezier(0.3, 0.8, 0.4, 1),
+    box-shadow 0.12s;
+}
+.submit:hover {
+  transform: translate(-1px, -2px);
+  box-shadow: 6px 8px 0 var(--ink);
+}
+.submit:active {
+  transform: translate(1px, 2px);
+  box-shadow: 1px 1px 0 var(--ink);
+}
+
+/* Mode swap line */
+.swap {
+  margin-top: 22px;
+  text-align: center;
+  font-weight: 500;
+  font-size: 0.98rem;
+  color: var(--ink-soft);
+}
+.swap b {
+  color: var(--primary);
+  font-weight: 700;
+  cursor: pointer;
+}
+.swap b:hover {
+  text-decoration: underline;
+}
+
+.terms {
+  margin-top: 22px;
+  text-align: center;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+.terms a {
+  color: var(--ink);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+@media (max-width: 560px) {
+  .formside {
+    padding: 72px 20px 40px;
+  }
+  .wrap {
+    max-width: 100%;
+  }
+}

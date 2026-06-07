@@ -6,10 +6,12 @@ interface AvatarProps {
   size?: number;
   /** Faint outer ring used on the larger hero-calendar avatars. */
   ring?: boolean;
+  /** Outline colour; defaults to the page surface (white) via the stylesheet. */
+  borderColor?: string;
 }
 
 /** A circular friend avatar showing an initial on a solid colour. */
-export default function Avatar({ label, color, size = 34, ring = false }: AvatarProps) {
+export default function Avatar({ label, color, size = 34, ring = false, borderColor }: AvatarProps) {
   return (
     <span
       className={styles.av}
@@ -18,6 +20,7 @@ export default function Avatar({ label, color, size = 34, ring = false }: Avatar
         height: size,
         background: color,
         fontSize: size * 0.4,
+        borderColor,
         boxShadow: ring ? '0 0 0 1px color-mix(in srgb, var(--ink) 18%, transparent)' : undefined,
       }}
     >

@@ -1,0 +1,19 @@
+/* The auth screen runs the "Confetti" system on its mint accent with the
+   Bricolage display face — both scoped here so the landing page is untouched. */
+.auth {
+  --font-display: 'Bricolage Grotesque';
+  --primary: var(--mint);
+
+  display: grid;
+  grid-template-columns: 1.02fr 1fr;
+  min-height: 100vh;
+  /* Match the prototype's base metrics rather than the landing page's 17px. */
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+@media (max-width: 880px) {
+  .auth {
+    grid-template-columns: 1fr;
+  }
+}

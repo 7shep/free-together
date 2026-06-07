@@ -22,7 +22,7 @@ export default function Hero() {
             crew is open — no group-chat chaos.
           </p>
           <div className={styles.actions}>
-            <Button href="#start" variant="primary" size="lg">
+            <Button href="#/auth" variant="primary" size="lg">
               Create your group →
             </Button>
             <Button href="#how" size="lg">

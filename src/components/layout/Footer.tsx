@@ -14,7 +14,7 @@ export default function Footer() {
         <nav className={styles.links}>
           <a href="#how">How it works</a>
           <a href="#features">Features</a>
-          <a href="#start">Get started</a>
+          <a href="#/auth">Get started</a>
         </nav>
 
         <span className={styles.copy}>Made for crews who keep missing each other.</span>

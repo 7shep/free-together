@@ -1,24 +1,14 @@
-import Footer from './components/layout/Footer';
-import Nav from './components/layout/Nav';
-import ClosingCTA from './components/sections/ClosingCTA';
-import Features from './components/sections/Features';
-import Hero from './components/sections/Hero';
-import HowItWorks from './components/sections/HowItWorks';
-import { useScrollReveal } from './hooks/useScrollReveal';
+import AuthScreen from './components/auth/AuthScreen';
+import Landing from './components/Landing';
+import { useAuthRoute } from './hooks/useAuthRoute';
 
+/** Routes between the landing page and the auth screen via the URL hash. */
 export default function App() {
-  useScrollReveal();
+  const route = useAuthRoute();
 
-  return (
-    <>
-      <Nav />
-      <main id="top">
-        <Hero />
-        <HowItWorks />
-        <Features />
-        <ClosingCTA />
-      </main>
-      <Footer />
-    </>
-  );
+  if (route.view === 'auth') {
+    return <AuthScreen initialMode={route.mode} />;
+  }
+
+  return <Landing />;
 }

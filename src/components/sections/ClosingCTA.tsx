@@ -18,7 +18,7 @@ export default function ClosingCTA() {
             Start a group, share the link, and find your next free night in under two minutes.
           </p>
           <div className={styles.actions}>
-            <Button href="#" variant="primary" size="lg" onDark>
+            <Button href="#/auth" variant="primary" size="lg" onDark>
               Create your group →
             </Button>
             <Button href="#how" size="lg" onDark>

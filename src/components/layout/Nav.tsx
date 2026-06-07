@@ -25,10 +25,10 @@ export default function Nav() {
         </nav>
 
         <div className={styles.cta}>
-          <a href="#how" className={styles.link}>
+          <a href="#/auth/login" className={styles.link}>
             Log in
           </a>
-          <Button href="#start" variant="primary">
+          <Button href="#/auth" variant="primary">
             Create your <span className={styles.full}>group</span>
           </Button>
         </div>

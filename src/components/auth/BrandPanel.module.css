@@ -1,0 +1,122 @@
+.brandside {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: 40px 52px;
+  background: var(--ink);
+  color: var(--bg);
+}
+
+/* Brand, headline, and footer all sit above the confetti layer. */
+.top,
+.mid,
+.foot {
+  position: relative;
+  z-index: 3;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 11px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.35rem;
+  color: var(--bg);
+}
+
+.mid {
+  margin: auto 0;
+  max-width: 30ch;
+}
+.headline {
+  font-size: clamp(2rem, 3.4vw, 3rem);
+  font-weight: 700;
+  color: var(--bg);
+}
+.hl {
+  background: linear-gradient(transparent 58%, var(--free) 58% 94%, transparent 94%);
+  padding: 0 0.08em;
+  border-radius: 3px;
+  color: var(--bg);
+}
+.lead {
+  margin-top: 18px;
+  font-size: 1.12rem;
+  font-weight: 500;
+  color: color-mix(in srgb, var(--bg) 74%, transparent);
+}
+
+/* Mini "free together" card */
+.card {
+  margin-top: 34px;
+  max-width: 360px;
+  padding: 18px 20px;
+  background: color-mix(in srgb, var(--bg) 8%, transparent);
+  border: 2px solid color-mix(in srgb, var(--bg) 26%, transparent);
+  border-radius: 18px;
+  backdrop-filter: blur(4px);
+}
+.cardRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.label {
+  font-weight: 600;
+  font-size: 0.96rem;
+  color: var(--bg);
+}
+.label small {
+  display: block;
+  font-weight: 500;
+  font-size: 0.82rem;
+  color: color-mix(in srgb, var(--bg) 64%, transparent);
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 14px;
+  padding: 0.4em 0.9em;
+  background: var(--free);
+  color: #fff;
+  border: 2px solid color-mix(in srgb, var(--bg) 30%, transparent);
+  border-radius: 999px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.86rem;
+}
+.star {
+  font-size: 0.95rem;
+}
+
+.foot {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 500;
+  font-size: 0.92rem;
+  color: color-mix(in srgb, var(--bg) 64%, transparent);
+}
+.qm {
+  display: flex;
+}
+.q {
+  width: 26px;
+  height: 26px;
+  margin-left: -8px;
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+}
+.q:first-child {
+  margin-left: 0;
+}
+
+/* On narrow screens the form takes over the full width. */
+@media (max-width: 880px) {
+  .brandside {
+    display: none;
+  }
+}
