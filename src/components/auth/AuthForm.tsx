@@ -1,14 +1,8 @@
 import { useState, type FormEvent } from 'react';
 import type { AuthMode } from '../../hooks/useAuthRoute';
-import {
-  AppleIcon,
-  BackChevron,
-  CheckSmall,
-  GoogleIcon,
-  LockIcon,
-  MailIcon,
-  UserIcon,
-} from './icons';
+import { isSupabaseConfigured, requireSupabase } from '../../lib/supabase';
+import LocalSetupNotice from '../LocalSetupNotice';
+import { AppleIcon, BackChevron, GoogleIcon, LockIcon, MailIcon, UserIcon } from './icons';
 import styles from './AuthForm.module.css';
 
 interface AuthFormProps {
@@ -17,27 +11,76 @@ interface AuthFormProps {
   onSuccess: () => void;
 }
 
-/**
- * Right half of the auth screen. A sliding pill tab switches between Sign up and
- * Log in; the heading, fields, and CTA copy follow the active mode. Submitting
- * shows a brief pending label — there's no backend yet, so it just resets.
- */
 export default function AuthForm({ mode, onModeChange, onSuccess }: AuthFormProps) {
   const isLogin = mode === 'login';
+  const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [pending, setPending] = useState(false);
+  const [status, setStatus] = useState<{ text: string; tone: 'error' | 'success' } | null>(null);
 
-  const submit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const submit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
     if (pending) return;
+
+    if (!isSupabaseConfigured) {
+      setStatus({
+        tone: 'error',
+        text: 'Add your Supabase URL and publishable key to the Vite env before signing in.',
+      });
+      return;
+    }
+
     setPending(true);
-    window.setTimeout(() => {
+    setStatus(null);
+
+    try {
+      const supabase = requireSupabase();
+
+      if (isLogin) {
+        const { error } = await supabase.auth.signInWithPassword({
+          email: email.trim(),
+          password,
+        });
+
+        if (error) throw error;
+        onSuccess();
+        return;
+      }
+
+      const { data, error } = await supabase.auth.signUp({
+        email: email.trim(),
+        password,
+        options: {
+          data: {
+            full_name: fullName.trim(),
+          },
+          emailRedirectTo: `${window.location.origin}${window.location.pathname}#/app`,
+        },
+      });
+
+      if (error) throw error;
+
+      if (data.session) {
+        onSuccess();
+        return;
+      }
+
+      setStatus({
+        tone: 'success',
+        text: 'Account created. Check your email to verify it, then sign in to open your calendar.',
+      });
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Something went wrong while talking to Supabase.';
+      setStatus({ tone: 'error', text: message });
+    } finally {
       setPending(false);
-      onSuccess();
-    }, 1400);
+    }
   };
 
-  const submitLabel = pending ? 'One sec…' : isLogin ? 'Log in' : 'Create your group';
+  const submitLabel = pending ? 'One sec…' : isLogin ? 'Log in' : 'Create your account';
 
   return (
     <main className={styles.formside}>
@@ -76,19 +119,19 @@ export default function AuthForm({ mode, onModeChange, onSuccess }: AuthFormProp
           <h2>{isLogin ? 'Welcome back' : 'Create your group'}</h2>
           <p>
             {isLogin
-              ? 'Log in to see when your crew is free.'
-              : 'Free forever. No card, no app to download.'}
+              ? 'Sign in with your real Supabase account to load your groups.'
+              : 'Create an account, verify your email if required, and start syncing real availability.'}
           </p>
         </div>
 
         <div className={styles.social}>
-          <button className={styles.sbtn} type="button">
+          <button className={`${styles.sbtn} ${styles.sbtnDisabled}`} type="button" disabled>
             <GoogleIcon />
-            Continue with Google
+            Google soon
           </button>
-          <button className={styles.sbtn} type="button">
+          <button className={`${styles.sbtn} ${styles.sbtnDisabled}`} type="button" disabled>
             <AppleIcon />
-            Continue with Apple
+            Apple soon
           </button>
         </div>
 
@@ -100,7 +143,15 @@ export default function AuthForm({ mode, onModeChange, onSuccess }: AuthFormProp
               <label htmlFor="auth-name">Your name</label>
               <div className={styles.inp}>
                 <UserIcon />
-                <input id="auth-name" type="text" placeholder="Maya Rivera" autoComplete="name" />
+                <input
+                  id="auth-name"
+                  type="text"
+                  placeholder="Maya Rivera"
+                  autoComplete="name"
+                  required
+                  value={fullName}
+                  onChange={(event) => setFullName(event.target.value)}
+                />
               </div>
             </div>
           )}
@@ -115,6 +166,8 @@ export default function AuthForm({ mode, onModeChange, onSuccess }: AuthFormProp
                 placeholder="you@email.com"
                 autoComplete="email"
                 required
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
               />
             </div>
           </div>
@@ -129,11 +182,14 @@ export default function AuthForm({ mode, onModeChange, onSuccess }: AuthFormProp
                 placeholder="••••••••"
                 autoComplete={isLogin ? 'current-password' : 'new-password'}
                 required
+                minLength={8}
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
               />
               <button
                 type="button"
                 className={styles.togglePw}
-                onClick={() => setShowPassword((v) => !v)}
+                onClick={() => setShowPassword((value) => !value)}
                 aria-pressed={showPassword}
               >
                 {showPassword ? 'Hide' : 'Show'}
@@ -141,22 +197,25 @@ export default function AuthForm({ mode, onModeChange, onSuccess }: AuthFormProp
             </div>
           </div>
 
-          {isLogin && (
-            <div className={styles.rowBetween}>
-              <label className={styles.remember}>
-                <input type="checkbox" />
-                <span className={styles.box}>
-                  <CheckSmall />
-                </span>
-                Remember me
-              </label>
-              <a href="#" className={styles.forgot}>
-                Forgot password?
-              </a>
-            </div>
+          <p className={styles.helper}>
+            {isLogin
+              ? 'Use the same email and password stored in Supabase Auth.'
+              : 'After you sign up, Supabase may ask for email verification before the first real session starts.'}
+          </p>
+
+          {status && (
+            <p
+              className={
+                status.tone === 'error'
+                  ? `${styles.status} ${styles.error}`
+                  : `${styles.status} ${styles.success}`
+              }
+            >
+              {status.text}
+            </p>
           )}
 
-          <button className={styles.submit} type="submit">
+          <button className={styles.submit} type="submit" disabled={pending}>
             <span>{submitLabel}</span>
             <span aria-hidden="true">→</span>
           </button>
@@ -186,6 +245,8 @@ export default function AuthForm({ mode, onModeChange, onSuccess }: AuthFormProp
             <a href="#">Privacy Policy</a>.
           </p>
         )}
+
+        {!isSupabaseConfigured && <LocalSetupNotice compact />}
       </div>
     </main>
   );

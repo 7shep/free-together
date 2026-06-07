@@ -1,51 +1,62 @@
 # Free Together
 
-Landing page for **Free Together** — a scheduling app that shows friend groups the
-exact windows when everyone is free. Built from the Claude Design handoff bundle
-as a React + TypeScript + Vite site.
+Free Together is a React + TypeScript + Vite app for finding real overlap across friend groups. It now uses Supabase for authentication, group membership, invites, and saved availability.
 
 ## Tech stack
 
-- **React 18** + **TypeScript**
-- **Vite** for dev server and build
-- **Plain CSS** — global design tokens in `src/styles/tokens.css`, component-scoped
-  styles via CSS Modules. The design's exact tokens (the "Confetti" system: cream
-  canvas, deep-plum ink, friend-colour accents, chunky outlines + hard offset
-  shadows, Fredoka display type) are ported verbatim.
+- React 18 + TypeScript
+- Vite
+- Supabase Auth + Postgres
+- Plain CSS with global design tokens in `src/styles/tokens.css`
 
 ## Getting started
 
 ```bash
 npm install
-npm run dev      # start the dev server
-npm run build    # type-check + production build to dist/
-npm run preview  # preview the production build
+cp .env.example .env.local
+npm run dev
 ```
+
+Set these values in `.env.local`:
+
+```bash
+VITE_SUPABASE_URL=
+VITE_SUPABASE_PUBLISHABLE_KEY=
+```
+
+## Supabase setup
+
+1. Enable Email/Password auth in your Supabase project.
+2. Apply the SQL migration in [supabase/migrations/20260607170000_initialize_free_together.sql](/C:/Users/alex/Desktop/Coding%20Projects/free-together/supabase/migrations/20260607170000_initialize_free_together.sql:1).
+3. Use your project URL and publishable key in the Vite env file.
+
+The migration creates:
+
+- `profiles`
+- `groups`
+- `group_members`
+- `group_invites`
+- `availability_slots`
+
+It also enables RLS and installs policies so users can only access their own groups, invites, and availability.
 
 ## Project structure
 
-```
+```text
 src/
-  main.tsx, App.tsx           app entry + composition
-  styles/tokens.css           design tokens, theme variants, base + utilities
-  theme/colors.ts             friend-colour palette (CSS-var references)
-  types/css.ts                CSSProperties extended with custom-property keys
-  data/                       content + visual data (calendar, steps, features)
-  hooks/                      useScrollReveal, useNavScrolled
   components/
-    layout/                   Nav, Footer
-    sections/                 Hero, HowItWorks, Features, ClosingCTA
-    ui/                       Button, SectionHead, Eyebrow, Avatar, AvatarStack, Logo
-    visuals/                  CalendarCard, InviteViz, ScheduleViz, OverlapViz,
-                              FeatureDemo, Confetti
-    icons/                    inline SVG icons
+    app/                      signed-in dashboard
+    auth/                     auth screen and form
+    layout/, sections/, ui/   marketing + shared UI
+  hooks/
+    useAuthRoute.ts
+    useSupabaseSession.ts
+  lib/
+    appData.ts                Supabase queries and mutations
+    calendar.ts               seven-day calendar window builder
+    supabase.ts               browser client setup
+  styles/
+    tokens.css
+supabase/
+  migrations/
 ```
-
-## Notes
-
-- Four alternate palettes (`sunset`, `cool`, `candy`) live in `tokens.css` under
-  `html[data-theme=...]` so a theme switcher can be added later. None ships today.
-- The design tool's "Tweaks" panel was an authoring artifact and is intentionally
-  not part of the product.
-- Motion (sticker bob, free-slot pulse, scroll reveals) respects
-  `prefers-reduced-motion`.

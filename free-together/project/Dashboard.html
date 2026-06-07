@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Free Together — Weekend Crew</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Baloo+2:wght@500;600;700;800&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;1,500&display=swap" rel="stylesheet" />
+<style>
+/* ─── tokens ─── */
+:root{
+  --bg:#FFF9F0;--surface:#FFFFFF;--ink:#241C3B;--ink-soft:#615a78;
+  --coral:#FF5D5D;--sun:#FFC93C;--mint:#22CE9C;--violet:#6C5CE7;
+  --sky:#46A8FF;--pink:#FF7AC6;--free:#1FC98C;
+  --primary:#FF7AC6;--primary-ink:#fff;
+  --radius:16px;--border:2.5px;
+  --shadow:4px 5px 0 var(--ink);--shadow-sm:2px 3px 0 var(--ink);
+  --font-display:'Bricolage Grotesque';--font-body:'Plus Jakarta Sans';
+  --nav-h:68px;--side-w:272px;
+}
+html[data-theme="sunset"]{--bg:#FFF4EC;--ink:#3A1E22;--ink-soft:#7a5a52;--coral:#FF6B4A;--sun:#FFB23E;--mint:#F0A341;--violet:#E2604E;--sky:#FF8A5B;--pink:#FF9E7D;--free:#F2913C;--primary:#FF6B4A;}
+html[data-theme="cool"]{--bg:#F2F7FB;--ink:#13243B;--ink-soft:#4d627d;--coral:#3E8BFF;--sun:#36C6D6;--mint:#19C7A6;--violet:#6E6BF5;--sky:#54B0FF;--pink:#7CA0FF;--free:#19C7A6;--primary:#3E8BFF;}
+html[data-theme="candy"]{--bg:#FFF2F8;--ink:#34163A;--ink-soft:#76547a;--coral:#FF5DA8;--sun:#FFC247;--mint:#37D6B0;--violet:#9B5CFF;--sky:#5FB6FF;--pink:#FF7AC6;--free:#37D6B0;--primary:#9B5CFF;}
+html[data-shape="soft"]{--shadow:0 12px 28px -10px color-mix(in srgb,var(--ink) 50%,transparent);--shadow-sm:0 6px 14px -6px color-mix(in srgb,var(--ink) 45%,transparent);--border:1.5px;}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body),system-ui,sans-serif;
+  font-size:15px;-webkit-font-smoothing:antialiased}
+h1,h2,h3{font-family:var(--font-display),system-ui,sans-serif;line-height:1.05;letter-spacing:-.01em}
+button,input{font-family:inherit}
+::selection{background:var(--sun);color:var(--ink)}
+
+/* ─── app shell ─── */
+.app{display:flex;flex-direction:column;height:100vh}
+
+/* ─── nav ─── */
+.nav{flex:none;height:var(--nav-h);display:flex;align-items:center;gap:16px;padding:0 20px;
+  background:var(--surface);border-bottom:var(--border) solid var(--ink);z-index:40}
+.nav .brand{display:flex;align-items:center;gap:9px;font-family:var(--font-display);font-weight:700;font-size:1.2rem;text-decoration:none;color:var(--ink);flex:none}
+.nav .brand svg{flex:none}
+.sep{width:var(--border);height:28px;background:color-mix(in srgb,var(--ink) 20%,transparent);border-radius:2px;flex:none}
+.group-picker{display:flex;align-items:center;gap:9px;font-family:var(--font-display);font-weight:600;font-size:1.1rem;cursor:pointer;padding:6px 10px;border-radius:10px}
+.group-picker:hover{background:color-mix(in srgb,var(--ink) 6%,transparent)}
+.group-picker .avs{display:flex}
+.group-picker .av{width:26px;height:26px;border-radius:50%;border:2px solid var(--surface);margin-left:-7px;display:grid;place-items:center;color:#fff;font-weight:700;font-size:.64rem}
+.group-picker .av:first-child{margin-left:0}
+.group-picker .chevron{color:var(--ink-soft);font-size:.75rem}
+.nav-fill{flex:1}
+.week-nav{display:flex;align-items:center;gap:8px}
+.week-nav .label{font-family:var(--font-display);font-weight:600;font-size:.98rem;min-width:130px;text-align:center}
+.wbtn{border:var(--border) solid var(--ink);background:var(--surface);border-radius:9px;width:32px;height:32px;display:grid;place-items:center;cursor:pointer;box-shadow:var(--shadow-sm)}
+.wbtn:hover{background:var(--bg)}
+.invite-btn{display:flex;align-items:center;gap:7px;border:var(--border) solid var(--ink);background:var(--primary);color:var(--primary-ink);border-radius:999px;padding:.46em .95em;font-family:var(--font-display);font-weight:600;font-size:.88rem;cursor:pointer;box-shadow:var(--shadow-sm)}
+.invite-btn:hover{filter:brightness(.95)}
+.user-av{width:36px;height:36px;border-radius:50%;border:var(--border) solid var(--ink);background:var(--pink);display:grid;place-items:center;color:#fff;font-family:var(--font-display);font-weight:700;cursor:pointer;box-shadow:var(--shadow-sm);flex:none}
+
+/* ─── body ─── */
+.body{display:flex;flex:1;overflow:hidden}
+
+/* ─── sidebar ─── */
+.sidebar{flex:none;width:var(--side-w);display:flex;flex-direction:column;
+  border-right:var(--border) solid var(--ink);background:var(--surface);overflow-y:auto;overflow-x:hidden}
+.sb-sect{padding:18px 18px 0}
+.sb-sect+.sb-sect{padding-top:10px}
+.sb-head{font-family:var(--font-display);font-weight:700;font-size:.78rem;text-transform:uppercase;
+  letter-spacing:.07em;color:var(--ink-soft);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between}
+.sb-head button{border:0;background:0;font-size:.85rem;font-weight:600;color:var(--primary);cursor:pointer;font-family:var(--font-body)}
+
+/* members */
+.member{display:flex;align-items:center;gap:10px;padding:8px 0;cursor:pointer;border-radius:9px;padding:7px 8px;
+  transition:background .12s}
+.member:hover{background:color-mix(in srgb,var(--ink) 5%,transparent)}
+.member .av{width:32px;height:32px;border-radius:50%;border:2.5px solid var(--ink);display:grid;place-items:center;color:#fff;font-family:var(--font-display);font-weight:700;font-size:.84rem;box-shadow:var(--shadow-sm);flex:none;transition:opacity .18s}
+.member.hidden .av{opacity:.3}
+.member .info{flex:1;min-width:0}
+.member .info .name{font-weight:600;font-size:.97rem}
+.member .info .status{font-size:.8rem;color:var(--ink-soft);font-weight:500}
+.member .check{width:20px;height:20px;border:2.5px solid var(--ink);border-radius:6px;display:grid;place-items:center;background:var(--surface);transition:background .14s}
+.member:not(.hidden) .check{background:var(--free)}
+.member.hidden .check{background:var(--surface)}
+
+/* divider */
+.sb-divider{height:var(--border);background:color-mix(in srgb,var(--ink) 12%,transparent);margin:14px 0 0}
+
+/* free window cards */
+.fw-cards{display:flex;flex-direction:column;gap:10px;padding:0 18px 14px}
+.fw-card{border:var(--border) solid var(--ink);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow-sm);cursor:pointer;transition:transform .12s,box-shadow .12s;position:relative;overflow:hidden}
+.fw-card:hover{transform:translate(-1px,-2px);box-shadow:var(--shadow)}
+.fw-card.best{background:color-mix(in srgb,var(--free) 14%,var(--surface))}
+.fw-card .badge{position:absolute;top:-1px;right:-1px;background:var(--free);color:#fff;border-left:var(--border) solid var(--ink);border-bottom:var(--border) solid var(--ink);border-radius:0 var(--radius) 0 10px;padding:2px 9px;font-family:var(--font-display);font-weight:600;font-size:.7rem}
+.fw-card .time{font-family:var(--font-display);font-weight:700;font-size:1.1rem}
+.fw-card .dur{font-size:.82rem;font-weight:500;color:var(--ink-soft)}
+.fw-card .lock{display:flex;align-items:center;justify-content:center;gap:7px;margin-top:10px;width:100%;
+  border:var(--border) solid var(--ink);background:var(--ink);color:var(--bg);border-radius:999px;
+  padding:.46em 0;font-family:var(--font-display);font-weight:600;font-size:.88rem;cursor:pointer}
+.fw-card .lock:hover{opacity:.88}
+
+/* add block form */
+.add-form{padding:14px 18px 18px;display:none}
+.add-form.open{display:block}
+.add-form label{display:block;font-weight:600;font-size:.82rem;margin-bottom:5px;color:var(--ink-soft)}
+.add-form input,.add-form select{width:100%;border:var(--border) solid var(--ink);border-radius:9px;background:var(--surface);padding:.55em .75em;font-size:.92rem;color:var(--ink);outline:none;margin-bottom:9px}
+.add-form input:focus,.add-form select:focus{box-shadow:var(--shadow-sm)}
+.add-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.add-submit{width:100%;border:var(--border) solid var(--ink);background:var(--primary);color:var(--primary-ink);border-radius:999px;padding:.58em 0;font-family:var(--font-display);font-weight:600;font-size:.95rem;cursor:pointer;box-shadow:var(--shadow-sm)}
+.add-submit:hover{filter:brightness(.95)}
+
+/* ─── main calendar ─── */
+.main{flex:1;overflow:auto;position:relative;background:var(--bg)}
+
+/* day headers (sticky) */
+.cal-header{position:sticky;top:0;z-index:30;display:flex;background:var(--surface);
+  border-bottom:var(--border) solid var(--ink)}
+.ch-gutter{flex:none;width:54px;border-right:1px solid color-mix(in srgb,var(--ink) 12%,transparent)}
+.ch-day{flex:1;text-align:center;padding:12px 6px;min-width:0}
+.ch-day .dow{font-family:var(--font-display);font-weight:700;font-size:.82rem;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-soft)}
+.ch-day .date{font-family:var(--font-display);font-weight:700;font-size:1.1rem;margin-top:2px}
+.ch-day.has-free .date{color:var(--free)}
+.ch-day.has-free .dow{color:var(--free)}
+.ch-day .free-pip{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--free);margin-left:5px;vertical-align:middle}
+
+/* person legend in header */
+.legend{display:flex;align-items:center;justify-content:center;gap:3px;margin-top:6px;flex-wrap:wrap}
+.legend .dot{width:8px;height:8px;border-radius:50%;opacity:.85}
+
+/* calendar grid */
+.cal-grid{display:flex;min-width:0}
+.cal-gutter{flex:none;width:54px;position:relative;min-height:900px;border-right:1px solid color-mix(in srgb,var(--ink) 12%,transparent)}
+.time-label{position:absolute;right:8px;font-size:.72rem;font-weight:600;color:var(--ink-soft);transform:translateY(-50%);white-space:nowrap}
+
+/* day columns */
+.day-col{flex:1;position:relative;min-width:0;border-right:1px solid color-mix(in srgb,var(--ink) 8%,transparent)}
+.day-col:last-child{border-right:0}
+.hour-line{position:absolute;left:0;right:0;border-top:1px solid color-mix(in srgb,var(--ink) 8%,transparent)}
+.half-line{position:absolute;left:0;right:0;border-top:1px dashed color-mix(in srgb,var(--ink) 5%,transparent)}
+
+/* person lanes */
+.lanes{position:absolute;inset:0;display:flex}
+.lane{flex:1;position:relative}
+.event{position:absolute;left:1px;right:1px;border-radius:4px;background:var(--person-color);opacity:.82;
+  font-size:.62rem;font-weight:600;color:#fff;padding:2px 3px;overflow:hidden;cursor:default;
+  white-space:nowrap;text-overflow:ellipsis;line-height:1.2}
+.event .el{writing-mode:vertical-rl;transform:rotate(180deg);display:none}
+.event:hover{opacity:1;z-index:10}
+
+/* free window overlay */
+.free-overlay{position:absolute;left:3px;right:3px;border-radius:10px;
+  background:color-mix(in srgb,var(--free) 22%,transparent);
+  border:2px solid var(--free);z-index:20;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+  transition:background .15s;animation:fpulse 2.8s ease-in-out infinite}
+.free-overlay:hover{background:color-mix(in srgb,var(--free) 35%,transparent)}
+.free-overlay .fo-label{font-family:var(--font-display);font-weight:700;font-size:.68rem;
+  color:var(--free);text-align:center;line-height:1.1;padding:2px 4px;writing-mode:horizontal-tb}
+.free-overlay .fo-star{font-size:.85rem}
+@keyframes fpulse{0%,100%{box-shadow:0 0 0 0 color-mix(in srgb,var(--free) 25%,transparent)}
+  50%{box-shadow:0 0 0 6px color-mix(in srgb,var(--free) 0%,transparent)}}
+
+/* ─── toast / modal ─── */
+.modal-bg{position:fixed;inset:0;background:rgba(36,28,59,.4);z-index:200;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.modal-bg.open{display:flex}
+.modal{background:var(--surface);border:var(--border) solid var(--ink);border-radius:24px;
+  padding:32px 28px;box-shadow:var(--shadow);max-width:360px;width:90%;text-align:center;position:relative}
+.modal-icon{width:64px;height:64px;border-radius:18px;background:var(--free);border:var(--border) solid var(--ink);
+  display:grid;place-items:center;font-size:2rem;margin:0 auto 18px;box-shadow:var(--shadow-sm)}
+.modal h3{font-size:1.6rem;font-weight:700}
+.modal .modal-time{font-family:var(--font-display);font-weight:600;font-size:1.12rem;color:var(--ink-soft);margin-top:6px}
+.modal .modal-avs{display:flex;justify-content:center;margin:18px 0 6px}
+.modal .modal-avs .av{width:40px;height:40px;border-radius:50%;border:2.5px solid var(--surface);margin-left:-10px;display:grid;place-items:center;color:#fff;font-family:var(--font-display);font-weight:700;font-size:.95rem;box-shadow:0 0 0 2px var(--ink)}
+.modal .modal-avs .av:first-child{margin-left:0}
+.modal .modal-sub{font-size:.9rem;color:var(--ink-soft);font-weight:500;margin-top:4px;margin-bottom:24px}
+.modal-actions{display:flex;flex-direction:column;gap:10px}
+.modal-actions .share{border:var(--border) solid var(--ink);background:var(--ink);color:var(--bg);border-radius:999px;padding:.75em 1em;font-family:var(--font-display);font-weight:600;font-size:1rem;cursor:pointer;box-shadow:var(--shadow-sm)}
+.modal-actions .share:hover{opacity:.9}
+.modal-actions .cancel{border:0;background:0;font-weight:600;color:var(--ink-soft);font-size:.95rem;cursor:pointer;padding:.5em}
+.modal .close{position:absolute;top:14px;right:14px;border:0;background:color-mix(in srgb,var(--ink) 8%,transparent);border-radius:8px;width:30px;height:30px;cursor:pointer;font-size:1rem;display:grid;place-items:center;color:var(--ink-soft)}
+.modal .close:hover{background:color-mix(in srgb,var(--ink) 14%,transparent)}
+
+/* toast */
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(80px);
+  background:var(--ink);color:var(--bg);border-radius:999px;padding:.7em 1.4em;
+  font-family:var(--font-display);font-weight:600;font-size:.95rem;z-index:300;
+  box-shadow:4px 5px 0 color-mix(in srgb,var(--ink) 60%,transparent);
+  transition:transform .35s cubic-bezier(.2,.8,.3,1),opacity .35s;opacity:0;white-space:nowrap}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+@media(max-width:700px){:root{--side-w:0;}.sidebar{display:none}.cal-header .legend{display:none}}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ─── nav ─── -->
+<header class="nav">
+  <a href="index.html" class="brand">
+    <svg width="28" height="24" viewBox="0 0 38 32" fill="none" aria-hidden="true">
+      <circle cx="13" cy="16" r="11" fill="var(--coral)" stroke="var(--ink)" stroke-width="2.5"/>
+      <circle cx="25" cy="16" r="11" fill="var(--sky)" stroke="var(--ink)" stroke-width="2.5"/>
+      <path d="M19 7.2A11 11 0 0 1 19 24.8 11 11 0 0 1 19 7.2Z" fill="var(--free)" stroke="var(--ink)" stroke-width="2.5"/>
+    </svg>
+    Free Together
+  </a>
+  <div class="sep"></div>
+  <div class="group-picker">
+    <div class="avs">
+      <span class="av" style="background:var(--coral)">M</span>
+      <span class="av" style="background:var(--violet)">T</span>
+      <span class="av" style="background:var(--sky)">J</span>
+      <span class="av" style="background:var(--pink)">Y</span>
+    </div>
+    Weekend Crew
+    <span class="chevron">▾</span>
+  </div>
+  <div class="nav-fill"></div>
+  <div class="week-nav">
+    <button class="wbtn" onclick="shiftWeek(-1)" title="Prev week">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 2L4 7l5 5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <span class="label" id="weekLabel">Jun 9 – 15</span>
+    <button class="wbtn" onclick="shiftWeek(1)" title="Next week">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 2l5 5-5 5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+  </div>
+  <div class="nav-fill"></div>
+  <button class="invite-btn">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 2v10M2 7h10" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+    Invite
+  </button>
+  <div class="user-av">Y</div>
+</header>
+
+<div class="body">
+  <!-- sidebar -->
+  <aside class="sidebar" id="sidebar"></aside>
+
+  <!-- main calendar -->
+  <main class="main" id="main">
+    <div class="cal-header" id="calHeader"></div>
+    <div class="cal-grid" id="calGrid"></div>
+  </main>
+</div>
+</div>
+
+<!-- modal -->
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <button class="close" onclick="closeModal()">✕</button>
+    <div class="modal-icon">🎉</div>
+    <h3>Lock it in!</h3>
+    <div class="modal-time" id="modalTime"></div>
+    <div class="modal-avs">
+      <span class="av" style="background:var(--coral)">M</span>
+      <span class="av" style="background:var(--violet)">T</span>
+      <span class="av" style="background:var(--sky)">J</span>
+      <span class="av" style="background:var(--pink)">Y</span>
+    </div>
+    <p class="modal-sub">Everyone's free — let's make it happen.</p>
+    <div class="modal-actions">
+      <button class="share" onclick="sendToGroup()">Send to group chat</button>
+      <button class="cancel" onclick="closeModal()">Not this one</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<div id="tweaks-root"></div>
+
+<script>
+/* ─── data ─── */
+const HOUR_H = 60; // 1px = 1 min
+const CAL_S  = 8;  // 8am
+const CAL_E  = 23; // 11pm
+const DAYS   = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const DATES  = ['Jun 9','Jun 10','Jun 11','Jun 12','Jun 13','Jun 14','Jun 15'];
+
+const FRIENDS = [
+  {id:'maya', name:'Maya', i:'M', color:'var(--coral)'},
+  {id:'theo', name:'Theo', i:'T', color:'var(--violet)'},
+  {id:'jess', name:'Jess', i:'J', color:'var(--sky)'},
+  {id:'you',  name:'You',  i:'Y', color:'var(--pink)', me:true},
+];
+
+// start/end = minutes from midnight
+const BUSY = [
+  {p:'maya',d:0,s:9*60,   e:17*60+30,l:'Work'},
+  {p:'maya',d:1,s:9*60,   e:17*60+30,l:'Work'},
+  {p:'maya',d:2,s:9*60,   e:17*60+30,l:'Work'},
+  {p:'maya',d:2,s:19*60,  e:21*60,   l:'Yoga'},
+  {p:'maya',d:3,s:9*60,   e:17*60+30,l:'Work'},
+  {p:'maya',d:4,s:9*60,   e:16*60,   l:'Work'},
+  {p:'maya',d:4,s:19*60,  e:21*60,   l:'Dinner'},
+  {p:'maya',d:5,s:11*60,  e:13*60,   l:'Errands'},
+  {p:'theo',d:0,s:8*60,   e:17*60,   l:'Work'},
+  {p:'theo',d:1,s:8*60,   e:17*60,   l:'Work'},
+  {p:'theo',d:1,s:19*60,  e:21*60,   l:'Gym'},
+  {p:'theo',d:2,s:8*60,   e:17*60,   l:'Work'},
+  {p:'theo',d:3,s:8*60,   e:17*60,   l:'Work'},
+  {p:'theo',d:3,s:20*60,  e:22*60,   l:'Late shift'},
+  {p:'theo',d:4,s:8*60,   e:16*60,   l:'Work'},
+  {p:'theo',d:5,s:10*60,  e:12*60,   l:'Gym'},
+  {p:'theo',d:6,s:13*60,  e:16*60,   l:'Family'},
+  {p:'jess',d:0,s:10*60,  e:18*60,   l:'Work'},
+  {p:'jess',d:1,s:10*60,  e:18*60,   l:'Work'},
+  {p:'jess',d:2,s:10*60,  e:18*60,   l:'Work'},
+  {p:'jess',d:2,s:20*60,  e:22*60,   l:'Movie night'},
+  {p:'jess',d:3,s:10*60,  e:18*60,   l:'Work'},
+  {p:'jess',d:3,s:18*60,  e:21*60,   l:'Class'},
+  {p:'jess',d:4,s:10*60,  e:17*60,   l:'Work'},
+  {p:'jess',d:5,s:9*60,   e:11*60,   l:'Run'},
+  {p:'jess',d:5,s:15*60,  e:17*60,   l:'Brunch'},
+  {p:'you', d:0,s:9*60,   e:17*60,   l:'Work'},
+  {p:'you', d:1,s:9*60,   e:17*60,   l:'Work'},
+  {p:'you', d:1,s:19*60+30,e:21*60,  l:'Gym'},
+  {p:'you', d:2,s:9*60,   e:17*60,   l:'Work'},
+  {p:'you', d:3,s:9*60,   e:17*60,   l:'Work'},
+  {p:'you', d:4,s:9*60,   e:15*60,   l:'Work'},
+  {p:'you', d:6,s:14*60,  e:17*60,   l:'Family dinner'},
+];
+
+const FREE_WINS = [
+  {d:4, s:17*60, e:19*60, label:'Fri 5:00 – 7:00 PM', dur:'2 hrs',  best:true},
+  {d:5, s:13*60, e:15*60, label:'Sat 1:00 – 3:00 PM', dur:'2 hrs',  best:false},
+  {d:5, s:17*60, e:21*60, label:'Sat 5:00 – 9:00 PM', dur:'4 hrs',  best:false},
+];
+
+const hidden = new Set(); // hidden person ids
+
+/* ─── helpers ─── */
+function toTop(min){ return (min - CAL_S*60) + 'px'; }
+function toH(start, end){ return (end - start) + 'px'; }
+function fmtTime(min){ const h=Math.floor(min/60), m=min%60; const suffix=h<12?'am':'pm'; const h12=h%12||12; return m ? `${h12}:${String(m).padStart(2,'0')}${suffix}` : `${h12}${suffix}`; }
+
+/* ─── sidebar ─── */
+function buildSidebar(){
+  const sb = document.getElementById('sidebar');
+  sb.innerHTML = '';
+
+  // members
+  const ms = document.createElement('div'); ms.className='sb-sect';
+  ms.innerHTML = '<div class="sb-head">Members <button onclick="toggleAddForm()">+ Add time</button></div>';
+  const ml = document.createElement('div');
+  FRIENDS.forEach(f=>{
+    const m = document.createElement('div');
+    m.className='member'+(hidden.has(f.id)?' hidden':'');
+    m.id='member-'+f.id;
+    const busyToday = BUSY.filter(b=>b.p===f.id && b.d===4).length > 0; // show Fri status
+    m.innerHTML=`<div class="av" style="background:${f.color}">${f.i}</div>
+      <div class="info"><div class="name">${f.name}${f.me?' (you)':''}</div>
+      <div class="status">${busyToday ? 'Busy Fri until 5pm' : 'Free Friday'}</div></div>
+      <div class="check"><svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M2 5.6l2.2 2.2L9 3" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>`;
+    m.onclick=()=>toggleMember(f.id);
+    ml.appendChild(m);
+  });
+  ms.appendChild(ml);
+  sb.appendChild(ms);
+
+  // add form
+  const af = document.createElement('div'); af.className='add-form'; af.id='addForm';
+  af.innerHTML=`<label>What</label><input type="text" placeholder="e.g. Gym, Work…" id="addLabel" />
+    <label>Day</label>
+    <select id="addDay">${DAYS.map((d,i)=>`<option value="${i}">${d} ${DATES[i]}</option>`).join('')}</select>
+    <div class="add-row">
+      <div><label>From</label><input type="time" id="addFrom" value="09:00"/></div>
+      <div><label>To</label><input type="time" id="addTo" value="17:00"/></div>
+    </div>
+    <button class="add-submit" onclick="addBlock()">Add to my schedule</button>`;
+  sb.appendChild(af);
+
+  sb.appendChild(Object.assign(document.createElement('div'),{className:'sb-divider'}));
+
+  // free windows
+  const fws = document.createElement('div'); fws.className='sb-sect';
+  fws.innerHTML='<div class="sb-head">Free this week</div>';
+  sb.appendChild(fws);
+  const cards = document.createElement('div'); cards.className='fw-cards';
+  FREE_WINS.forEach(fw=>{
+    const c = document.createElement('div');
+    c.className='fw-card'+(fw.best?' best':'');
+    c.innerHTML=`${fw.best?'<div class="badge">★ Best</div>':''}
+      <div class="time">${fw.label}</div>
+      <div class="dur">${fw.dur} · everyone free</div>
+      <button class="lock" onclick="openModal(event,'${fw.label}')">🎉 Lock it in</button>`;
+    cards.appendChild(c);
+  });
+  sb.appendChild(cards);
+}
+
+/* ─── calendar header ─── */
+function buildHeader(){
+  const hdr = document.getElementById('calHeader');
+  hdr.innerHTML='';
+  const gu=document.createElement('div'); gu.className='ch-gutter'; hdr.appendChild(gu);
+  const freeDays = new Set(FREE_WINS.map(f=>f.d));
+  DAYS.forEach((d,i)=>{
+    const dc=document.createElement('div');
+    dc.className='ch-day'+(freeDays.has(i)?' has-free':'');
+    dc.innerHTML=`<div class="dow">${d}${freeDays.has(i)?'<span class="free-pip"></span>':''}</div>
+      <div class="date">${DATES[i]}</div>
+      <div class="legend">${FRIENDS.map(f=>`<span class="dot" style="background:${f.color}" title="${f.name}"></span>`).join('')}</div>`;
+    hdr.appendChild(dc);
+  });
+}
+
+/* ─── calendar grid ─── */
+function buildGrid(){
+  const grid = document.getElementById('calGrid');
+  grid.innerHTML='';
+
+  // time gutter
+  const gu=document.createElement('div'); gu.className='cal-gutter';
+  gu.style.height=((CAL_E-CAL_S)*HOUR_H)+'px';
+  for(let h=CAL_S;h<=CAL_E;h++){
+    const lbl=document.createElement('div'); lbl.className='time-label';
+    lbl.style.top=((h-CAL_S)*HOUR_H)+'px';
+    lbl.textContent=h<12?`${h}am`:h===12?'12pm':`${h-12}pm`;
+    gu.appendChild(lbl);
+  }
+  grid.appendChild(gu);
+
+  // day columns
+  DAYS.forEach((_,di)=>{
+    const col=document.createElement('div'); col.className='day-col';
+    col.style.height=((CAL_E-CAL_S)*HOUR_H)+'px';
+
+    // hour/half lines
+    for(let h=CAL_S;h<CAL_E;h++){
+      const l=document.createElement('div'); l.className='hour-line';
+      l.style.top=((h-CAL_S)*HOUR_H)+'px'; col.appendChild(l);
+      const lh=document.createElement('div'); lh.className='half-line';
+      lh.style.top=((h-CAL_S)*HOUR_H+30)+'px'; col.appendChild(lh);
+    }
+
+    // lanes
+    const lanes=document.createElement('div'); lanes.className='lanes';
+    FRIENDS.forEach(f=>{
+      const lane=document.createElement('div'); lane.className='lane';
+      lane.id=`lane-${f.id}-${di}`;
+      lane.style.setProperty('--person-color', f.color);
+      BUSY.filter(b=>b.p===f.id&&b.d===di).forEach(b=>{
+        const ev=document.createElement('div'); ev.className='event';
+        ev.style.top=toTop(b.s); ev.style.height=toH(b.s,b.e);
+        ev.title=`${f.name}: ${b.l} (${fmtTime(b.s)}–${fmtTime(b.e)})`;
+        ev.textContent=b.l;
+        lane.appendChild(ev);
+      });
+      if(hidden.has(f.id)) lane.style.display='none';
+      lanes.appendChild(lane);
+    });
+    col.appendChild(lanes);
+
+    // free windows
+    FREE_WINS.filter(fw=>fw.d===di).forEach(fw=>{
+      const fo=document.createElement('div'); fo.className='free-overlay';
+      fo.style.top=toTop(fw.s); fo.style.height=toH(fw.s,fw.e);
+      if(toH(fw.s,fw.e).replace('px','')>60){
+        fo.innerHTML=`<span class="fo-star">★</span><span class="fo-label">${fmtTime(fw.s)}<br>${fmtTime(fw.e)}</span>`;
+      }
+      fo.onclick=(e)=>{ e.stopPropagation(); openModal(e, fw.label); };
+      col.appendChild(fo);
+    });
+
+    grid.appendChild(col);
+  });
+}
+
+/* ─── interactions ─── */
+function toggleMember(id){
+  if(hidden.has(id)) hidden.delete(id); else hidden.add(id);
+  const el=document.getElementById('member-'+id);
+  if(el) el.classList.toggle('hidden', hidden.has(id));
+  // toggle all lanes for this person
+  DAYS.forEach((_,di)=>{
+    const lane=document.getElementById(`lane-${id}-${di}`);
+    if(lane) lane.style.display = hidden.has(id)?'none':'';
+  });
+}
+
+function toggleAddForm(){
+  const f=document.getElementById('addForm');
+  f.classList.toggle('open');
+}
+
+function addBlock(){
+  const label=document.getElementById('addLabel').value.trim()||'Busy';
+  const day=parseInt(document.getElementById('addDay').value);
+  const [fh,fm]=document.getElementById('addFrom').value.split(':').map(Number);
+  const [th,tm]=document.getElementById('addTo').value.split(':').map(Number);
+  const start=fh*60+fm, end=th*60+tm;
+  if(end<=start){showToast('End time must be after start time!'); return;}
+  BUSY.push({p:'you',d:day,s:start,e:end,l:label});
+  buildGrid();
+  document.getElementById('addForm').classList.remove('open');
+  showToast(`Added "${label}" to your schedule`);
+}
+
+let weekOffset=0;
+const BASE_DATES=['Jun 9','Jun 10','Jun 11','Jun 12','Jun 13','Jun 14','Jun 15'];
+function shiftWeek(dir){
+  weekOffset+=dir;
+  const d=new Date('2026-06-08T00:00:00');
+  d.setDate(d.getDate()+weekOffset*7);
+  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  for(let i=0;i<7;i++){
+    const nd=new Date(d); nd.setDate(nd.getDate()+i+1);
+    DATES[i]=`${months[nd.getMonth()]} ${nd.getDate()}`;
+  }
+  const start=new Date(d); start.setDate(start.getDate()+1);
+  const end=new Date(d); end.setDate(end.getDate()+7);
+  document.getElementById('weekLabel').textContent=`${months[start.getMonth()]} ${start.getDate()} – ${end.getDate()}`;
+  buildHeader(); buildGrid();
+}
+
+function openModal(e, label){
+  if(e && e.stopPropagation) e.stopPropagation();
+  document.getElementById('modalTime').textContent=label;
+  document.getElementById('modalBg').classList.add('open');
+}
+function closeModal(){ document.getElementById('modalBg').classList.remove('open'); }
+document.getElementById('modalBg').addEventListener('click',function(e){ if(e.target===this) closeModal(); });
+
+function sendToGroup(){
+  closeModal();
+  showToast('🎉 Sent to group chat!');
+}
+
+function showToast(msg, dur=2600){
+  const t=document.getElementById('toast'); t.textContent=msg;
+  t.classList.add('show');
+  clearTimeout(t._tid);
+  t._tid=setTimeout(()=>t.classList.remove('show'), dur);
+}
+
+/* ─── init ─── */
+buildHeader(); buildGrid(); buildSidebar();
+
+// scroll to 5pm on load
+document.getElementById('main').scrollTop = (17-8)*60 - 80;
+</script>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel">
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "theme":"confetti","displayFont":"Bricolage","shape":"chunky","radius":16,"primary":"#FF7AC6"
+}/*EDITMODE-END*/;
+const FONTS={'Fredoka':'Fredoka','Baloo 2':'Baloo 2','Bricolage':'Bricolage Grotesque'};
+function TweakApp(){
+  const [t,setTweak]=useTweaks(TWEAK_DEFAULTS);
+  React.useEffect(()=>{
+    const r=document.documentElement;
+    r.setAttribute('data-theme',t.theme==='confetti'?'':t.theme);
+    r.setAttribute('data-shape',t.shape==='soft'?'soft':'');
+    r.style.setProperty('--font-display',"'"+(FONTS[t.displayFont]||'Bricolage Grotesque')+"'");
+    r.style.setProperty('--radius',t.radius+'px');
+    if(t.theme==='confetti') r.style.setProperty('--primary',t.primary);
+    else r.style.removeProperty('--primary');
+  },[t]);
+  return (
+    <TweaksPanel title="Tweaks">
+      <TweakSection label="Color theme"/>
+      <TweakColor label="Palette"
+        value={t.theme==='sunset'?['#FF6B4A','#FFB23E','#3A1E22']:t.theme==='cool'?['#3E8BFF','#19C7A6','#13243B']:t.theme==='candy'?['#9B5CFF','#FF5DA8','#34163A']:['#FF5D5D','#FFC93C','#6C5CE7']}
+        options={[['#FF5D5D','#FFC93C','#6C5CE7'],['#FF6B4A','#FFB23E','#3A1E22'],['#3E8BFF','#19C7A6','#13243B'],['#9B5CFF','#FF5DA8','#34163A']]}
+        onChange={(v)=>{const m={'#FF5D5D':'confetti','#FF6B4A':'sunset','#3E8BFF':'cool','#9B5CFF':'candy'};setTweak('theme',m[v[0]]||'confetti');}}/>
+      {t.theme==='confetti'&&<TweakColor label="Your color" value={t.primary} options={['#FF5D5D','#6C5CE7','#22CE9C','#46A8FF','#FF7AC6']} onChange={(v)=>setTweak('primary',v)}/>}
+      <TweakSection label="Type"/>
+      <TweakRadio label="Display font" value={t.displayFont} options={['Fredoka','Baloo 2','Bricolage']} onChange={(v)=>setTweak('displayFont',v)}/>
+      <TweakSection label="Shape"/>
+      <TweakRadio label="Style" value={t.shape} options={['chunky','soft']} onChange={(v)=>setTweak('shape',v)}/>
+    </TweaksPanel>
+  );
+}
+ReactDOM.createRoot(document.getElementById('tweaks-root')).render(<TweakApp/>);
+</script>
+</body>
+</html>

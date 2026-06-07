@@ -45,24 +45,23 @@
 
 .actionButton,
 .signOut,
-.choiceCard,
-.choiceTag {
+.primaryButton,
+.inlineButton,
+.slotCell,
+.choiceCard {
   border: var(--border) solid var(--ink);
-  border-radius: 999px;
 }
 
 .actionButton,
-.signOut {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+.signOut,
+.primaryButton,
+.inlineButton {
   min-height: 48px;
   padding: 0 18px;
-  background: var(--surface);
+  border-radius: 999px;
   box-shadow: var(--shadow-sm);
   font: inherit;
   font-weight: 600;
-  color: var(--ink);
   cursor: pointer;
   transition:
     transform 0.14s cubic-bezier(0.2, 0.7, 0.3, 1),
@@ -70,21 +69,31 @@
     background 0.14s ease;
 }
 
+.actionButton,
+.primaryButton,
+.inlineButton {
+  background: var(--surface);
+  color: var(--ink);
+}
+
 .actionButton:hover,
 .signOut:hover,
+.primaryButton:hover,
+.inlineButton:hover,
 .choiceCard:hover {
   transform: translate(-1px, -2px);
   box-shadow: 5px 6px 0 var(--ink);
 }
 
-.actionButtonActive {
+.actionButtonActive,
+.primaryButton {
   background: var(--primary);
   color: var(--primary-ink);
 }
 
 .signOut {
   background: transparent;
-  box-shadow: none;
+  color: var(--ink);
 }
 
 .page {
@@ -95,7 +104,8 @@
 .summaryCard,
 .panelCard,
 .noteCard,
-.calendarCard {
+.calendarCard,
+.notice {
   background: var(--surface);
   border: var(--border) solid var(--ink);
   border-radius: 28px;
@@ -104,20 +114,10 @@
 
 .summaryCard {
   display: grid;
-  grid-template-columns: minmax(0, 1.25fr) minmax(300px, 0.75fr);
+  grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
   gap: 30px;
   padding: 30px;
   align-items: center;
-}
-
-.kicker,
-.panelEyebrow {
-  font-family: var(--font-display), system-ui, sans-serif;
-  font-size: 0.82rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--mint);
 }
 
 .summaryText h1,
@@ -130,7 +130,18 @@
 .summaryText h1 {
   font-size: clamp(2.2rem, 4vw, 3.6rem);
   margin-top: 14px;
-  max-width: 11ch;
+  max-width: 12ch;
+}
+
+.kicker,
+.panelEyebrow,
+.subsectionTitle {
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--mint);
 }
 
 .lead,
@@ -143,7 +154,11 @@
 .bestItem small,
 .memberIdentity small,
 .choiceText small,
-.helperNote {
+.calendarHint,
+.emptyState p,
+.emptyMini,
+.footnote,
+.statCopy {
   color: var(--ink-soft);
 }
 
@@ -181,6 +196,20 @@
   font-size: 1.08rem;
 }
 
+.notice {
+  margin-top: 18px;
+  padding: 14px 18px;
+  font-weight: 600;
+}
+
+.noticeError {
+  background: color-mix(in srgb, var(--coral) 14%, white);
+}
+
+.noticeSuccess {
+  background: color-mix(in srgb, var(--mint) 18%, white);
+}
+
 .board {
   display: grid;
   grid-template-columns: 300px minmax(0, 1fr) 300px;
@@ -212,16 +241,58 @@
   font-size: 0.97rem;
 }
 
+.statRow,
+.formStack,
 .choiceList,
+.legend,
 .bestList,
 .memberList,
-.legend {
+.subsection {
   display: grid;
   gap: 12px;
 }
 
-.choiceList {
-  margin-top: 20px;
+.statRow {
+  margin-top: 18px;
+}
+
+.statBadge {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  min-height: 38px;
+  padding: 0 14px;
+  background: color-mix(in srgb, var(--mint) 18%, white);
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-weight: 700;
+}
+
+.formStack {
+  margin-top: 18px;
+}
+
+.textInput {
+  width: 100%;
+  min-height: 50px;
+  padding: 0 16px;
+  background: var(--surface);
+  border: var(--border) solid var(--ink);
+  border-radius: 16px;
+  font: inherit;
+  color: var(--ink);
+}
+
+.textInput:focus {
+  outline: none;
+  box-shadow: var(--shadow-sm);
+}
+
+.choiceList,
+.bestList,
+.memberList {
+  margin-top: 18px;
 }
 
 .choiceCard {
@@ -231,6 +302,7 @@
   width: 100%;
   padding: 13px 14px;
   background: color-mix(in srgb, var(--bg) 55%, white);
+  border-radius: 20px;
   box-shadow: var(--shadow-sm);
   cursor: pointer;
   text-align: left;
@@ -240,16 +312,16 @@
     background 0.14s ease;
 }
 
-.choiceCardActive {
-  background: color-mix(in srgb, var(--mint) 18%, white);
+.choiceCard:disabled,
+.primaryButton:disabled,
+.inlineButton:disabled,
+.slotCell:disabled {
+  cursor: wait;
+  opacity: 0.8;
 }
 
-.choiceDot {
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  border: 2px solid var(--ink);
-  flex: none;
+.choiceCardActive {
+  background: color-mix(in srgb, var(--mint) 18%, white);
 }
 
 .choiceText {
@@ -272,6 +344,7 @@
 .bestCount {
   flex: none;
   padding: 0.4em 0.72em;
+  border-radius: 999px;
   font-family: var(--font-display), system-ui, sans-serif;
   font-size: 0.82rem;
   font-weight: 700;
@@ -279,9 +352,9 @@
   color: var(--bg);
 }
 
-.helperNote {
-  margin-top: 18px;
-  font-size: 0.92rem;
+.inlineButton {
+  min-height: 40px;
+  padding: 0 14px;
 }
 
 .noteCard {
@@ -319,13 +392,12 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
-  margin-bottom: 22px;
+  margin-bottom: 18px;
 }
 
-.calendarGrid {
-  display: grid;
-  grid-template-columns: 104px repeat(7, minmax(78px, 1fr));
-  gap: 10px;
+.calendarHint {
+  margin-bottom: 18px;
+  font-weight: 600;
 }
 
 .calendarScroll {
@@ -333,11 +405,16 @@
   padding-bottom: 4px;
 }
 
+.calendarGrid {
+  display: grid;
+  grid-template-columns: 104px repeat(7, minmax(84px, 1fr));
+  gap: 10px;
+}
+
 .cornerCell,
 .dayHeader,
 .timeCell,
 .slotCell {
-  border: 2px solid color-mix(in srgb, var(--ink) 16%, transparent);
   border-radius: 20px;
 }
 
@@ -348,6 +425,7 @@
   place-items: center;
   padding: 14px 10px;
   background: color-mix(in srgb, var(--ink) 4%, white);
+  border: 2px solid color-mix(in srgb, var(--ink) 16%, transparent);
   text-align: center;
 }
 
@@ -371,13 +449,19 @@
 }
 
 .slotCell {
-  min-height: 94px;
+  min-height: 98px;
   padding: 12px 10px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   gap: 8px;
+  background: white;
+  text-align: left;
   transition: transform 0.14s ease;
+}
+
+.slotCell:hover:not(:disabled) {
+  transform: translateY(-2px);
 }
 
 .slotCell strong {
@@ -389,11 +473,11 @@
 .slotCell small {
   font-size: 0.8rem;
   font-weight: 600;
-  max-width: 9ch;
+  max-width: 10ch;
 }
 
-.slotCell:hover {
-  transform: translateY(-2px);
+.slotCellMine {
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--ink) 14%, transparent);
 }
 
 .slotCellFull {
@@ -401,9 +485,19 @@
   box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--mint) 35%, transparent);
 }
 
-.bestList,
-.memberList {
-  margin-top: 18px;
+.emptyState,
+.emptyMini {
+  padding: 18px;
+  background: color-mix(in srgb, var(--bg) 55%, white);
+  border: 2px dashed color-mix(in srgb, var(--ink) 18%, transparent);
+  border-radius: 20px;
+}
+
+.emptyState strong {
+  display: block;
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-size: 1.2rem;
+  margin-bottom: 8px;
 }
 
 .bestItem,
@@ -443,6 +537,11 @@
   color: white;
 }
 
+.footnote {
+  margin-top: 18px;
+  font-weight: 600;
+}
+
 @media (max-width: 1180px) {
   .board {
     grid-template-columns: 1fr;
@@ -476,7 +575,7 @@
   }
 
   .calendarGrid {
-    grid-template-columns: 90px repeat(7, minmax(70px, 1fr));
+    grid-template-columns: 90px repeat(7, minmax(74px, 1fr));
   }
 
   .leftRail,
@@ -493,7 +592,8 @@
   .summaryCard,
   .panelCard,
   .noteCard,
-  .calendarCard {
+  .calendarCard,
+  .notice {
     padding: 18px;
     border-radius: 22px;
   }
@@ -509,6 +609,6 @@
 
   .calendarGrid {
     gap: 8px;
-    min-width: 720px;
+    min-width: 760px;
   }
 }

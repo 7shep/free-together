@@ -117,6 +117,15 @@
 .sbtn svg {
   flex: none;
 }
+.sbtnDisabled {
+  opacity: 0.58;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+.sbtnDisabled:hover {
+  transform: none;
+  box-shadow: none;
+}
 
 .divider {
   display: flex;
@@ -193,56 +202,10 @@
   color: var(--ink);
 }
 
-/* Remember me + forgot password (log-in only) */
-.rowBetween {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin: -2px 0 20px;
-}
-.remember {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  cursor: pointer;
-  user-select: none;
-  font-weight: 500;
-  font-size: 0.92rem;
+.helper {
+  margin: 2px 0 14px;
+  font-size: 0.9rem;
   color: var(--ink-soft);
-}
-.remember input {
-  position: absolute;
-  width: 0;
-  height: 0;
-  opacity: 0;
-}
-.box {
-  display: grid;
-  place-items: center;
-  width: 22px;
-  height: 22px;
-  background: var(--surface);
-  border: 2.5px solid var(--ink);
-  border-radius: 7px;
-  transition: background 0.12s;
-}
-.box svg {
-  opacity: 0;
-  transition: opacity 0.12s;
-}
-.remember input:checked + .box {
-  background: var(--free);
-}
-.remember input:checked + .box svg {
-  opacity: 1;
-}
-.forgot {
-  font-weight: 600;
-  font-size: 0.92rem;
-  color: var(--primary);
-}
-.forgot:hover {
-  text-decoration: underline;
 }
 
 /* Submit */
@@ -266,13 +229,36 @@
     transform 0.12s cubic-bezier(0.3, 0.8, 0.4, 1),
     box-shadow 0.12s;
 }
+.submit:disabled {
+  cursor: wait;
+  opacity: 0.84;
+}
 .submit:hover {
   transform: translate(-1px, -2px);
   box-shadow: 6px 8px 0 var(--ink);
 }
+.submit:disabled:hover {
+  transform: none;
+  box-shadow: var(--shadow);
+}
 .submit:active {
   transform: translate(1px, 2px);
   box-shadow: 1px 1px 0 var(--ink);
+}
+
+.status {
+  margin-bottom: 16px;
+  padding: 0.9em 1em;
+  border: var(--border) solid var(--ink);
+  border-radius: 14px;
+  font-weight: 600;
+  font-size: 0.94rem;
+}
+.error {
+  background: color-mix(in srgb, var(--coral) 18%, white);
+}
+.success {
+  background: color-mix(in srgb, var(--mint) 18%, white);
 }
 
 /* Mode swap line */

@@ -1,0 +1,95 @@
+import type { MutableRefObject } from 'react';
+import type { CalendarDay, CalendarSlot } from '../../../lib/calendar';
+import type { GroupInvite, GroupListItem, GroupMember } from '../../../lib/appData';
+
+export interface DecoratedMember extends GroupMember {
+  color: string;
+  isMe: boolean;
+  label: string;
+}
+
+export interface RankedWindow {
+  count: number;
+  key: string;
+  openMembers: DecoratedMember[];
+  slot: CalendarSlot;
+  total: number;
+}
+
+export interface DashboardSidebarProps {
+  calendarDays: CalendarDay[];
+  clearDisabled: boolean;
+  createBusy: boolean;
+  createGroupName: string;
+  groups: GroupListItem[];
+  groupsSectionRef: MutableRefObject<HTMLDivElement | null>;
+  hiddenMemberIds: Set<string>;
+  incomingInvites: GroupInvite[];
+  inviteBusy: boolean;
+  inviteEmail: string;
+  inviteName: string;
+  inviteSectionRef: MutableRefObject<HTMLDivElement | null>;
+  members: DecoratedMember[];
+  pendingGroupInvites: GroupInvite[];
+  quickAddBusy: boolean;
+  quickAddDayKey: string;
+  quickAddOpen: boolean;
+  quickAddSlotIndex: number;
+  rankedWindows: RankedWindow[];
+  selectedGroup: GroupListItem | null;
+  selectedGroupId: string | null;
+  showInviteForm: boolean;
+  workingInviteId: string | null;
+  onAcceptInvite: (inviteId: string) => void;
+  onClearWeek: () => void;
+  onCreateGroup: () => void;
+  onCreateGroupNameChange: (value: string) => void;
+  onInviteEmailChange: (value: string) => void;
+  onInviteMember: () => void;
+  onInviteNameChange: (value: string) => void;
+  onOpenWindow: (window: RankedWindow) => void;
+  onQuickAddDayChange: (value: string) => void;
+  onQuickAddOpenChange: (nextOpen: boolean) => void;
+  onQuickAddSave: () => void;
+  onQuickAddSlotIndexChange: (value: number) => void;
+  onSelectGroup: (groupId: string) => void;
+  onShowInviteFormChange: (nextOpen: boolean) => void;
+  onToggleMember: (memberId: string) => void;
+}
+
+export interface DashboardTopbarProps {
+  groupName: string;
+  groupSubtitle: string;
+  inviteDisabled: boolean;
+  members: DecoratedMember[];
+  weekLabel: string;
+  onNextWeek: () => void;
+  onOpenGroups: () => void;
+  onOpenInvite: () => void;
+  onPrevWeek: () => void;
+  onSignOut: () => void;
+  userLabel: string;
+}
+
+export interface LockInModalProps {
+  groupName: string;
+  openWindow: RankedWindow | null;
+  onClose: () => void;
+  onConfirm: () => void;
+}
+
+export interface WeekCalendarProps {
+  availabilityBySlot: Map<string, Set<string>>;
+  calendarDays: CalendarDay[];
+  emptyMessage: string;
+  loading: boolean;
+  members: DecoratedMember[];
+  mySlotKeys: Set<string>;
+  openWindow: (window: RankedWindow) => void;
+  perfectWindows: RankedWindow[];
+  scrollRef: MutableRefObject<HTMLDivElement | null>;
+  selectedGroupName: string | null;
+  toggleAvailability: (slot: CalendarSlot) => void;
+  visibleMemberIds: Set<string>;
+  workingKey: string | null;
+}
