@@ -379,7 +379,15 @@
 
 .formBlock .textInput + .textInput,
 .formBlock .textInput + .primaryButton,
-.formBlock .primaryButton + .secondaryButton {
+.formBlock .primaryButton + .secondaryButton,
+.buttonRow + label {
+  margin-top: 10px;
+}
+
+.buttonRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
   margin-top: 10px;
 }
 

@@ -8,6 +8,7 @@ interface AuthScreenProps {
   /** Mode the screen opens in, derived from the route (`#/auth` vs `#/auth/login`). */
   initialMode: AuthMode;
   onSuccess: () => void;
+  preserveHashOnModeChange?: boolean;
 }
 
 /**
@@ -16,7 +17,11 @@ interface AuthScreenProps {
  * scoped to this screen (see the module), so the landing page keeps its own
  * coral + Fredoka system.
  */
-export default function AuthScreen({ initialMode, onSuccess }: AuthScreenProps) {
+export default function AuthScreen({
+  initialMode,
+  onSuccess,
+  preserveHashOnModeChange = false,
+}: AuthScreenProps) {
   const [mode, setMode] = useState<AuthMode>(initialMode);
 
   // Resync when the screen is opened via a different link while already mounted.
@@ -32,6 +37,7 @@ export default function AuthScreen({ initialMode, onSuccess }: AuthScreenProps) 
 
   const changeMode = (next: AuthMode) => {
     setMode(next);
+    if (preserveHashOnModeChange) return;
     // Keep the URL honest without stacking a history entry per toggle.
     window.history.replaceState(null, '', next === 'login' ? '#/auth/login' : '#/auth');
   };

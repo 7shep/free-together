@@ -27,6 +27,7 @@ export interface DashboardSidebarProps {
   incomingInvites: GroupInvite[];
   inviteBusy: boolean;
   inviteEmail: string;
+  inviteLink: string;
   inviteName: string;
   inviteSectionRef: MutableRefObject<HTMLDivElement | null>;
   members: DecoratedMember[];
@@ -38,9 +39,11 @@ export interface DashboardSidebarProps {
   rankedWindows: RankedWindow[];
   selectedGroup: GroupListItem | null;
   selectedGroupId: string | null;
+  shareLinkBusy: boolean;
   showInviteForm: boolean;
   workingInviteId: string | null;
   onAcceptInvite: (inviteId: string) => void;
+  onCopyInviteLink: () => void;
   onClearWeek: () => void;
   onCreateGroup: () => void;
   onCreateGroupNameChange: (value: string) => void;
@@ -53,6 +56,7 @@ export interface DashboardSidebarProps {
   onQuickAddSave: () => void;
   onQuickAddSlotIndexChange: (value: number) => void;
   onSelectGroup: (groupId: string) => void;
+  onShareInviteLink: () => void;
   onShowInviteFormChange: (nextOpen: boolean) => void;
   onToggleMember: (memberId: string) => void;
 }

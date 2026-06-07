@@ -5,11 +5,11 @@ import {
   clearAvailabilityRange,
   createGroup,
   inviteMember,
+  joinGroupByInviteCode,
   listIncomingInvites,
   listMyGroups,
   loadGroupSnapshot,
   setAvailability,
-  syncProfile,
   type AvailabilityRecord,
   type GroupInvite,
   type GroupListItem,
@@ -93,10 +93,11 @@ function formatWeekLabel(startDate: Date) {
 }
 
 interface AppHomeProps {
+  joinInviteCode?: string;
   user: User;
 }
 
-export default function AppHome({ user }: AppHomeProps) {
+export default function AppHome({ joinInviteCode, user }: AppHomeProps) {
   const [groups, setGroups] = useState<GroupListItem[]>([]);
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
   const [snapshot, setSnapshot] = useState<GroupSnapshot | null>(null);
@@ -120,12 +121,16 @@ export default function AppHome({ user }: AppHomeProps) {
   const groupsSectionRef = useRef<HTMLDivElement>(null);
   const inviteSectionRef = useRef<HTMLDivElement>(null);
   const mainScrollRef = useRef<HTMLDivElement>(null);
+  const joinedInviteCodeRef = useRef<string | null>(null);
 
   const calendarDays = useMemo(() => buildCalendarWindow(weekStart, 7), [weekStart]);
   const weekLabel = useMemo(() => formatWeekLabel(weekStart), [weekStart]);
   const rangeStart = calendarDays[0]?.dateKey ?? '';
   const rangeEnd = calendarDays[calendarDays.length - 1]?.dateKey ?? '';
   const selectedGroup = groups.find((group) => group.id === selectedGroupId) ?? null;
+  const inviteLink = selectedGroup
+    ? `${window.location.origin}${window.location.pathname}#/join/${encodeURIComponent(selectedGroup.inviteCode)}`
+    : '';
 
   useEffect(() => {
     document.title = selectedGroup ? `Free Together - ${selectedGroup.name}` : 'Free Together - your live calendar';
@@ -178,8 +183,6 @@ export default function AppHome({ user }: AppHomeProps) {
     setLoadingDashboard(true);
 
     try {
-      await syncProfile(user);
-
       const [nextGroups, nextIncomingInvites] = await Promise.all([
         listMyGroups(user.id),
         user.email ? listIncomingInvites(user.email) : Promise.resolve([]),
@@ -220,6 +223,50 @@ export default function AppHome({ user }: AppHomeProps) {
 
     void refreshSnapshot(selectedGroupId);
   }, [selectedGroupId, rangeEnd, rangeStart]);
+
+  useEffect(() => {
+    if (!joinInviteCode || joinedInviteCodeRef.current === joinInviteCode) {
+      return;
+    }
+
+    joinedInviteCodeRef.current = joinInviteCode;
+    setWorkingKey('join-group');
+
+    let cancelled = false;
+
+    void (async () => {
+      try {
+        const joinedGroup = await joinGroupByInviteCode(user, joinInviteCode);
+        if (cancelled) return;
+
+        await refreshDashboard(joinedGroup.groupId);
+        if (cancelled) return;
+
+        setShowInviteForm(false);
+        setNotice({
+          tone: 'success',
+          text: `You joined ${joinedGroup.groupName}. Add your availability to get the group moving.`,
+        });
+        setToast('Group joined');
+        window.location.hash = '#/app';
+      } catch (error) {
+        if (cancelled) return;
+
+        setNotice({
+          tone: 'error',
+          text: messageFromError(error, 'Unable to join that group from the invite link.'),
+        });
+      } finally {
+        if (!cancelled) {
+          setWorkingKey(null);
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [joinInviteCode, user]);
 
   const members = useMemo<DecoratedMember[]>(
     () =>
@@ -352,6 +399,69 @@ export default function AppHome({ user }: AppHomeProps) {
       setNotice({
         tone: 'error',
         text: messageFromError(error, 'Unable to create that invite.'),
+      });
+    } finally {
+      setWorkingKey(null);
+    }
+  };
+
+  const handleCopyInviteLink = async () => {
+    if (!inviteLink) return;
+
+    setWorkingKey('share-link');
+
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(inviteLink);
+      } else {
+        window.prompt('Copy this invite link', inviteLink);
+      }
+
+      setNotice({ tone: 'success', text: 'Invite link copied. Send it to your friends.' });
+      setToast('Invite link copied');
+    } catch (error) {
+      setNotice({
+        tone: 'error',
+        text: messageFromError(error, 'Unable to copy that invite link right now.'),
+      });
+    } finally {
+      setWorkingKey(null);
+    }
+  };
+
+  const handleShareInviteLink = async () => {
+    if (!selectedGroup || !inviteLink) return;
+
+    setWorkingKey('share-link');
+
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          text: `Join ${selectedGroup.name} on Free Together.`,
+          title: `${selectedGroup.name} invite`,
+          url: inviteLink,
+        });
+        setNotice({ tone: 'success', text: 'Invite link ready to send.' });
+        setToast('Invite link shared');
+        return;
+      }
+
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(inviteLink);
+      } else {
+        window.prompt('Copy this invite link', inviteLink);
+      }
+
+      setNotice({ tone: 'success', text: 'Invite link copied. Send it to your friends.' });
+      setToast('Invite link copied');
+    } catch (error) {
+      if (error instanceof Error && error.name === 'AbortError') {
+        return;
+      }
+
+      setNotice({
+        tone: 'error',
+        text: messageFromError(error, 'Unable to share that invite link right now.'),
       });
     } finally {
       setWorkingKey(null);
@@ -558,6 +668,7 @@ export default function AppHome({ user }: AppHomeProps) {
           incomingInvites={incomingInvites}
           inviteBusy={workingKey === 'invite-member'}
           inviteEmail={inviteEmail}
+          inviteLink={inviteLink}
           inviteName={inviteName}
           inviteSectionRef={inviteSectionRef}
           members={members}
@@ -569,9 +680,11 @@ export default function AppHome({ user }: AppHomeProps) {
           rankedWindows={rankedWindows}
           selectedGroup={selectedGroup}
           selectedGroupId={selectedGroupId}
+          shareLinkBusy={workingKey === 'share-link'}
           showInviteForm={showInviteForm}
           workingInviteId={workingKey?.startsWith('accept-') ? workingKey.replace('accept-', '') : null}
           onAcceptInvite={handleAcceptInvite}
+          onCopyInviteLink={handleCopyInviteLink}
           onClearWeek={handleClearWeek}
           onCreateGroup={handleCreateGroup}
           onCreateGroupNameChange={setCreateGroupName}
@@ -584,6 +697,7 @@ export default function AppHome({ user }: AppHomeProps) {
           onQuickAddSave={handleQuickAdd}
           onQuickAddSlotIndexChange={setQuickAddSlotIndex}
           onSelectGroup={setSelectedGroupId}
+          onShareInviteLink={handleShareInviteLink}
           onShowInviteFormChange={setShowInviteForm}
           onToggleMember={handleToggleMember}
         />

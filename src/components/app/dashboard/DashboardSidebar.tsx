@@ -13,6 +13,7 @@ export default function DashboardSidebar({
   incomingInvites,
   inviteBusy,
   inviteEmail,
+  inviteLink,
   inviteName,
   inviteSectionRef,
   members,
@@ -24,9 +25,11 @@ export default function DashboardSidebar({
   rankedWindows,
   selectedGroup,
   selectedGroupId,
+  shareLinkBusy,
   showInviteForm,
   workingInviteId,
   onAcceptInvite,
+  onCopyInviteLink,
   onClearWeek,
   onCreateGroup,
   onCreateGroupNameChange,
@@ -39,6 +42,7 @@ export default function DashboardSidebar({
   onQuickAddSave,
   onQuickAddSlotIndexChange,
   onSelectGroup,
+  onShareInviteLink,
   onShowInviteFormChange,
   onToggleMember,
 }: DashboardSidebarProps) {
@@ -124,7 +128,35 @@ export default function DashboardSidebar({
 
           {showInviteForm && (
             <div ref={inviteSectionRef} className={styles.formBlock}>
-              <label htmlFor="invite-name">Invite someone to this group</label>
+              <label htmlFor="invite-link">Share this invite link</label>
+              <input
+                id="invite-link"
+                className={styles.textInput}
+                type="text"
+                value={inviteLink}
+                readOnly
+                disabled={!selectedGroup}
+              />
+              <div className={styles.buttonRow}>
+                <button
+                  type="button"
+                  className={styles.primaryButton}
+                  onClick={onCopyInviteLink}
+                  disabled={!selectedGroup || shareLinkBusy}
+                >
+                  {shareLinkBusy ? 'Working...' : 'Copy invite link'}
+                </button>
+                <button
+                  type="button"
+                  className={styles.secondaryButton}
+                  onClick={onShareInviteLink}
+                  disabled={!selectedGroup || shareLinkBusy}
+                >
+                  Share link
+                </button>
+              </div>
+
+              <label htmlFor="invite-name">Save an email invite too</label>
               <input
                 id="invite-name"
                 className={styles.textInput}
@@ -146,7 +178,7 @@ export default function DashboardSidebar({
                 onClick={onInviteMember}
                 disabled={!selectedGroupId || inviteBusy}
               >
-                {inviteBusy ? 'Saving invite...' : 'Save invite'}
+                {inviteBusy ? 'Saving invite...' : 'Save email invite'}
               </button>
 
               {pendingGroupInvites.length > 0 && (

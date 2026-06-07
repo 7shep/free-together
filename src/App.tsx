@@ -44,6 +44,10 @@ export default function App() {
     return <AuthScreen initialMode={route.mode} onSuccess={() => (window.location.hash = '#/app')} />;
   }
 
+  if (route.view === 'join' && !user) {
+    return <AuthScreen initialMode="signup" onSuccess={() => {}} preserveHashOnModeChange />;
+  }
+
   if (route.view === 'app') {
     if (!isSupabaseConfigured) {
       return <AuthScreen initialMode="login" onSuccess={() => (window.location.hash = '#/app')} />;
@@ -54,6 +58,14 @@ export default function App() {
     }
 
     return <AppHome user={user} />;
+  }
+
+  if (route.view === 'join') {
+    if (!isSupabaseConfigured) {
+      return <AuthScreen initialMode="signup" onSuccess={() => {}} preserveHashOnModeChange />;
+    }
+
+    return <AppHome user={user!} joinInviteCode={route.code} />;
   }
 
   if (user && route.view === 'auth') {

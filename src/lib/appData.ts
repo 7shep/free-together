@@ -44,6 +44,16 @@ function getDisplayName(user: User) {
   return `${user.user_metadata?.full_name || user.user_metadata?.name || fallback}`.trim();
 }
 
+async function syncProfileBestEffort(user: User) {
+  try {
+    await syncProfile(user);
+  } catch (error) {
+    // Profile rows should already be created by the auth trigger. If the direct
+    // REST upsert fails, continue and let the real write surface a clearer error.
+    console.warn('Skipping non-blocking profile sync', error);
+  }
+}
+
 export async function syncProfile(user: User) {
   const client = requireSupabase();
   const payload = {
@@ -124,7 +134,7 @@ export async function listIncomingInvites(email: string): Promise<GroupInvite[]>
 
 export async function createGroup(user: User, name: string): Promise<string> {
   const client = requireSupabase();
-  await syncProfile(user);
+  await syncProfileBestEffort(user);
 
   const { data: group, error: groupError } = await client
     .from('groups')
@@ -148,9 +158,33 @@ export async function createGroup(user: User, name: string): Promise<string> {
   return group.id;
 }
 
+export async function joinGroupByInviteCode(
+  user: User,
+  inviteCode: string,
+): Promise<{ groupId: string; groupName: string }> {
+  const client = requireSupabase();
+  await syncProfileBestEffort(user);
+
+  const { data, error } = await client.rpc('join_group_by_invite_code', {
+    p_invite_code: inviteCode.trim().toLowerCase(),
+  });
+
+  if (error) throw error;
+
+  const row = Array.isArray(data) ? data[0] : data;
+  if (!row?.group_id || !row?.group_name) {
+    throw new Error('This invite link is invalid or no longer works.');
+  }
+
+  return {
+    groupId: row.group_id as string,
+    groupName: row.group_name as string,
+  };
+}
+
 export async function acceptInvite(user: User, inviteId: string) {
   const client = requireSupabase();
-  await syncProfile(user);
+  await syncProfileBestEffort(user);
 
   const { data: invite, error: inviteError } = await client
     .from('group_invites')

@@ -47,6 +47,58 @@ create table if not exists public.availability_slots (
 
 create schema if not exists private;
 
+create or replace function private.is_group_member(target_group_id uuid, target_user_id uuid default auth.uid())
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1
+    from public.group_members membership
+    where membership.group_id = target_group_id
+      and membership.user_id = target_user_id
+  );
+$$;
+
+create or replace function private.is_group_owner(target_group_id uuid, target_user_id uuid default auth.uid())
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1
+    from public.groups existing_group
+    where existing_group.id = target_group_id
+      and existing_group.created_by = target_user_id
+  );
+$$;
+
+create or replace function private.shares_group_with(other_user_id uuid, target_user_id uuid default auth.uid())
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1
+    from public.group_members my_membership
+    join public.group_members other_membership
+      on my_membership.group_id = other_membership.group_id
+    where my_membership.user_id = target_user_id
+      and other_membership.user_id = other_user_id
+  );
+$$;
+
+grant usage on schema private to authenticated;
+grant execute on function private.is_group_member(uuid, uuid) to authenticated;
+grant execute on function private.is_group_owner(uuid, uuid) to authenticated;
+grant execute on function private.shares_group_with(uuid, uuid) to authenticated;
+
 create or replace function private.handle_new_user()
 returns trigger
 language plpgsql
@@ -93,14 +145,7 @@ for select
 to authenticated
 using (
   id = auth.uid()
-  or exists (
-    select 1
-    from public.group_members my_membership
-    join public.group_members other_membership
-      on my_membership.group_id = other_membership.group_id
-    where my_membership.user_id = auth.uid()
-      and other_membership.user_id = profiles.id
-  )
+  or private.shares_group_with(profiles.id)
 );
 
 create policy "profiles_insert_self"
@@ -121,12 +166,8 @@ on public.groups
 for select
 to authenticated
 using (
-  exists (
-    select 1
-    from public.group_members membership
-    where membership.group_id = groups.id
-      and membership.user_id = auth.uid()
-  )
+  created_by = auth.uid()
+  or private.is_group_member(groups.id)
 );
 
 create policy "groups_insert_owner"
@@ -153,12 +194,7 @@ on public.group_members
 for select
 to authenticated
 using (
-  exists (
-    select 1
-    from public.group_members membership
-    where membership.group_id = group_members.group_id
-      and membership.user_id = auth.uid()
-  )
+  private.is_group_member(group_members.group_id)
 );
 
 create policy "group_members_insert_owner"
@@ -166,12 +202,7 @@ on public.group_members
 for insert
 to authenticated
 with check (
-  exists (
-    select 1
-    from public.groups existing_group
-    where existing_group.id = group_members.group_id
-      and existing_group.created_by = auth.uid()
-  )
+  private.is_group_owner(group_members.group_id)
   or (
     group_members.user_id = auth.uid()
     and exists (
@@ -190,12 +221,7 @@ on public.group_members
 for delete
 to authenticated
 using (
-  exists (
-    select 1
-    from public.groups existing_group
-    where existing_group.id = group_members.group_id
-      and existing_group.created_by = auth.uid()
-  )
+  private.is_group_owner(group_members.group_id)
 );
 
 create policy "group_invites_select_group_member_or_invitee"
@@ -203,12 +229,7 @@ on public.group_invites
 for select
 to authenticated
 using (
-  exists (
-    select 1
-    from public.group_members membership
-    where membership.group_id = group_invites.group_id
-      and membership.user_id = auth.uid()
-  )
+  private.is_group_member(group_invites.group_id)
   or exists (
     select 1
     from public.profiles profile
@@ -222,12 +243,7 @@ on public.group_invites
 for insert
 to authenticated
 with check (
-  exists (
-    select 1
-    from public.group_members membership
-    where membership.group_id = group_invites.group_id
-      and membership.user_id = auth.uid()
-  )
+  private.is_group_member(group_invites.group_id)
 );
 
 create policy "group_invites_update_group_member_or_invitee"
@@ -235,12 +251,7 @@ on public.group_invites
 for update
 to authenticated
 using (
-  exists (
-    select 1
-    from public.group_members membership
-    where membership.group_id = group_invites.group_id
-      and membership.user_id = auth.uid()
-  )
+  private.is_group_member(group_invites.group_id)
   or exists (
     select 1
     from public.profiles profile
@@ -249,12 +260,7 @@ using (
   )
 )
 with check (
-  exists (
-    select 1
-    from public.group_members membership
-    where membership.group_id = group_invites.group_id
-      and membership.user_id = auth.uid()
-  )
+  private.is_group_member(group_invites.group_id)
   or exists (
     select 1
     from public.profiles profile
@@ -268,12 +274,7 @@ on public.availability_slots
 for select
 to authenticated
 using (
-  exists (
-    select 1
-    from public.group_members membership
-    where membership.group_id = availability_slots.group_id
-      and membership.user_id = auth.uid()
-  )
+  private.is_group_member(availability_slots.group_id)
 );
 
 create policy "availability_insert_self"
@@ -282,12 +283,7 @@ for insert
 to authenticated
 with check (
   user_id = auth.uid()
-  and exists (
-    select 1
-    from public.group_members membership
-    where membership.group_id = availability_slots.group_id
-      and membership.user_id = auth.uid()
-  )
+  and private.is_group_member(availability_slots.group_id)
 );
 
 create policy "availability_delete_self"
@@ -296,10 +292,5 @@ for delete
 to authenticated
 using (
   user_id = auth.uid()
-  and exists (
-    select 1
-    from public.group_members membership
-    where membership.group_id = availability_slots.group_id
-      and membership.user_id = auth.uid()
-  )
+  and private.is_group_member(availability_slots.group_id)
 );
