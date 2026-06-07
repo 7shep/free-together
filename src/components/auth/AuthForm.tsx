@@ -14,6 +14,7 @@ import styles from './AuthForm.module.css';
 interface AuthFormProps {
   mode: AuthMode;
   onModeChange: (mode: AuthMode) => void;
+  onSuccess: () => void;
 }
 
 /**
@@ -21,7 +22,7 @@ interface AuthFormProps {
  * Log in; the heading, fields, and CTA copy follow the active mode. Submitting
  * shows a brief pending label — there's no backend yet, so it just resets.
  */
-export default function AuthForm({ mode, onModeChange }: AuthFormProps) {
+export default function AuthForm({ mode, onModeChange, onSuccess }: AuthFormProps) {
   const isLogin = mode === 'login';
   const [showPassword, setShowPassword] = useState(false);
   const [pending, setPending] = useState(false);
@@ -30,7 +31,10 @@ export default function AuthForm({ mode, onModeChange }: AuthFormProps) {
     e.preventDefault();
     if (pending) return;
     setPending(true);
-    window.setTimeout(() => setPending(false), 1400);
+    window.setTimeout(() => {
+      setPending(false);
+      onSuccess();
+    }, 1400);
   };
 
   const submitLabel = pending ? 'One sec…' : isLogin ? 'Log in' : 'Create your group';
