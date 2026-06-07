@@ -1,5 +1,6 @@
-import { useState, type FormEvent } from 'react';
+import { useRef, useState, type FormEvent } from 'react';
 import type { AuthMode } from '../../hooks/useAuthRoute';
+import { useAuth } from '../../context/AuthContext';
 import {
   AppleIcon,
   BackChevron,
@@ -25,12 +26,34 @@ export default function AuthForm({ mode, onModeChange }: AuthFormProps) {
   const isLogin = mode === 'login';
   const [showPassword, setShowPassword] = useState(false);
   const [pending, setPending] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
+  const { signUp, signIn } = useAuth();
 
-  const submit = (e: FormEvent<HTMLFormElement>) => {
+  const nameRef = useRef<HTMLInputElement>(null);
+  const emailRef = useRef<HTMLInputElement>(null);
+  const passwordRef = useRef<HTMLInputElement>(null);
+
+  const submit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (pending) return;
+    setAuthError(null);
     setPending(true);
-    window.setTimeout(() => setPending(false), 1400);
+
+    const email = emailRef.current?.value ?? '';
+    const password = passwordRef.current?.value ?? '';
+
+    let error: string | null;
+    if (isLogin) {
+      ({ error } = await signIn(email, password));
+    } else {
+      const displayName = nameRef.current?.value ?? '';
+      ({ error } = await signUp(email, password, displayName));
+    }
+
+    setPending(false);
+    if (error) {
+      setAuthError(error);
+    }
   };
 
   const submitLabel = pending ? 'One sec…' : isLogin ? 'Log in' : 'Create your group';
@@ -96,7 +119,7 @@ export default function AuthForm({ mode, onModeChange }: AuthFormProps) {
               <label htmlFor="auth-name">Your name</label>
               <div className={styles.inp}>
                 <UserIcon />
-                <input id="auth-name" type="text" placeholder="Maya Rivera" autoComplete="name" />
+                <input ref={nameRef} id="auth-name" type="text" placeholder="Maya Rivera" autoComplete="name" />
               </div>
             </div>
           )}
@@ -106,6 +129,7 @@ export default function AuthForm({ mode, onModeChange }: AuthFormProps) {
             <div className={styles.inp}>
               <MailIcon />
               <input
+                ref={emailRef}
                 id="auth-email"
                 type="email"
                 placeholder="you@email.com"
@@ -120,6 +144,7 @@ export default function AuthForm({ mode, onModeChange }: AuthFormProps) {
             <div className={styles.inp}>
               <LockIcon />
               <input
+                ref={passwordRef}
                 id="auth-password"
                 type={showPassword ? 'text' : 'password'}
                 placeholder="••••••••"
@@ -152,7 +177,9 @@ export default function AuthForm({ mode, onModeChange }: AuthFormProps) {
             </div>
           )}
 
-          <button className={styles.submit} type="submit">
+          {authError && <p className={styles.error}>{authError}</p>}
+
+          <button className={styles.submit} type="submit" disabled={pending}>
             <span>{submitLabel}</span>
             <span aria-hidden="true">→</span>
           </button>
