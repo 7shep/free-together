@@ -25,13 +25,7 @@ export interface DashboardSidebarProps {
   groupsSectionRef: MutableRefObject<HTMLDivElement | null>;
   hiddenMemberIds: Set<string>;
   incomingInvites: GroupInvite[];
-  inviteBusy: boolean;
-  inviteEmail: string;
-  inviteLink: string;
-  inviteName: string;
-  inviteSectionRef: MutableRefObject<HTMLDivElement | null>;
   members: DecoratedMember[];
-  pendingGroupInvites: GroupInvite[];
   quickAddBusy: boolean;
   quickAddDayKey: string;
   quickAddOpen: boolean;
@@ -39,17 +33,11 @@ export interface DashboardSidebarProps {
   rankedWindows: RankedWindow[];
   selectedGroup: GroupListItem | null;
   selectedGroupId: string | null;
-  shareLinkBusy: boolean;
-  showInviteForm: boolean;
   workingInviteId: string | null;
   onAcceptInvite: (inviteId: string) => void;
-  onCopyInviteLink: () => void;
   onClearWeek: () => void;
   onCreateGroup: () => void;
   onCreateGroupNameChange: (value: string) => void;
-  onInviteEmailChange: (value: string) => void;
-  onInviteMember: () => void;
-  onInviteNameChange: (value: string) => void;
   onOpenWindow: (window: RankedWindow) => void;
   onQuickAddDayChange: (value: string) => void;
   onQuickAddOpenChange: (nextOpen: boolean) => void;
@@ -57,8 +45,6 @@ export interface DashboardSidebarProps {
   onQuickAddSlotIndexChange: (value: number) => void;
   onOpenScheduleModal: () => void;
   onSelectGroup: (groupId: string) => void;
-  onShareInviteLink: () => void;
-  onShowInviteFormChange: (nextOpen: boolean) => void;
   onToggleMember: (memberId: string) => void;
 }
 
@@ -97,6 +83,23 @@ export interface ScheduleModalProps {
   selectedDayKey: string;
   startTime: string;
   submitting: boolean;
+}
+
+export interface InviteModalProps {
+  groupName: string;
+  inviteBusy: boolean;
+  inviteEmail: string;
+  inviteLink: string;
+  inviteName: string;
+  open: boolean;
+  pendingInvites: GroupInvite[];
+  shareLinkBusy: boolean;
+  onClose: () => void;
+  onCopyInviteLink: () => void;
+  onInviteEmailChange: (value: string) => void;
+  onInviteMember: () => void;
+  onInviteNameChange: (value: string) => void;
+  onShareInviteLink: () => void;
 }
 
 export interface WeekCalendarProps {

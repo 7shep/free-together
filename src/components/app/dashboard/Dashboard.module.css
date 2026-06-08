@@ -913,8 +913,17 @@
   text-align: left;
 }
 
+.inviteModalCard {
+  width: min(100%, 500px);
+  text-align: left;
+}
+
 .scheduleModalIcon {
   background: var(--sky);
+}
+
+.inviteModalIcon {
+  background: var(--pink);
 }
 
 .scheduleForm {

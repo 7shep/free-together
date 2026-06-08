@@ -20,6 +20,7 @@ import { buildCalendarWindow } from '../../lib/calendar';
 import { requireSupabase } from '../../lib/supabase';
 import DashboardCalendar from './dashboard/DashboardCalendar';
 import styles from './dashboard/Dashboard.module.css';
+import InviteModal from './dashboard/InviteModal';
 import DashboardSidebar from './dashboard/DashboardSidebar';
 import DashboardTopbar from './dashboard/DashboardTopbar';
 import LockInModal from './dashboard/LockInModal';
@@ -123,7 +124,7 @@ export default function AppHome({ joinInviteCode, user }: AppHomeProps) {
   const [createGroupName, setCreateGroupName] = useState('');
   const [inviteName, setInviteName] = useState('');
   const [inviteEmail, setInviteEmail] = useState('');
-  const [showInviteForm, setShowInviteForm] = useState(false);
+  const [inviteModalOpen, setInviteModalOpen] = useState(false);
   const [quickAddOpen, setQuickAddOpen] = useState(false);
   const [quickAddDayKey, setQuickAddDayKey] = useState('');
   const [quickAddSlotIndex, setQuickAddSlotIndex] = useState(0);
@@ -136,7 +137,6 @@ export default function AppHome({ joinInviteCode, user }: AppHomeProps) {
   const [activeWindow, setActiveWindow] = useState<RankedWindow | null>(null);
 
   const groupsSectionRef = useRef<HTMLDivElement>(null);
-  const inviteSectionRef = useRef<HTMLDivElement>(null);
   const mainScrollRef = useRef<HTMLDivElement>(null);
   const joinedInviteCodeRef = useRef<string | null>(null);
 
@@ -265,7 +265,7 @@ export default function AppHome({ joinInviteCode, user }: AppHomeProps) {
         await refreshDashboard(joinedGroup.groupId);
         if (cancelled) return;
 
-        setShowInviteForm(false);
+        setInviteModalOpen(false);
         setNotice({
           tone: 'success',
           text: `You joined ${joinedGroup.groupName}. Add your availability to get the group moving.`,
@@ -368,16 +368,13 @@ export default function AppHome({ joinInviteCode, user }: AppHomeProps) {
 
   const pendingGroupInvites = (snapshot?.invites ?? []).filter((invite) => invite.status === 'pending');
 
-  const openInvitePanel = () => {
+  const openInviteModal = () => {
     if (!selectedGroupId) {
       setNotice({ tone: 'error', text: 'Create or select a group before you invite someone.' });
       return;
     }
 
-    setShowInviteForm(true);
-    window.setTimeout(() => {
-      inviteSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 0);
+    setInviteModalOpen(true);
   };
 
   const handleCreateGroup = async () => {
@@ -391,7 +388,7 @@ export default function AppHome({ joinInviteCode, user }: AppHomeProps) {
       setNotice({ tone: 'success', text: 'Group created. Start inviting friends or add your own schedule.' });
       setToast('Group created');
       await refreshDashboard(groupId);
-      setShowInviteForm(true);
+      setInviteModalOpen(true);
     } catch (error) {
       setNotice({
         tone: 'error',
@@ -752,7 +749,7 @@ export default function AppHome({ joinInviteCode, user }: AppHomeProps) {
         selectedGroupId={selectedGroupId}
         weekLabel={weekLabel}
         onNextWeek={() => setWeekStart((current) => shiftWeek(current, 1))}
-        onOpenInvite={openInvitePanel}
+        onOpenInvite={openInviteModal}
         onPrevWeek={() => setWeekStart((current) => shiftWeek(current, -1))}
         onSelectGroup={setSelectedGroupId}
         onSignOut={handleSignOut}
@@ -769,13 +766,7 @@ export default function AppHome({ joinInviteCode, user }: AppHomeProps) {
           groupsSectionRef={groupsSectionRef}
           hiddenMemberIds={hiddenMemberIds}
           incomingInvites={incomingInvites}
-          inviteBusy={workingKey === 'invite-member'}
-          inviteEmail={inviteEmail}
-          inviteLink={inviteLink}
-          inviteName={inviteName}
-          inviteSectionRef={inviteSectionRef}
           members={members}
-          pendingGroupInvites={pendingGroupInvites}
           quickAddBusy={workingKey === 'quick-add'}
           quickAddDayKey={quickAddDayKey}
           quickAddOpen={quickAddOpen}
@@ -783,17 +774,11 @@ export default function AppHome({ joinInviteCode, user }: AppHomeProps) {
           rankedWindows={rankedWindows}
           selectedGroup={selectedGroup}
           selectedGroupId={selectedGroupId}
-          shareLinkBusy={workingKey === 'share-link'}
-          showInviteForm={showInviteForm}
           workingInviteId={workingKey?.startsWith('accept-') ? workingKey.replace('accept-', '') : null}
           onAcceptInvite={handleAcceptInvite}
-          onCopyInviteLink={handleCopyInviteLink}
           onClearWeek={handleClearWeek}
           onCreateGroup={handleCreateGroup}
           onCreateGroupNameChange={setCreateGroupName}
-          onInviteEmailChange={setInviteEmail}
-          onInviteMember={handleInviteMember}
-          onInviteNameChange={setInviteName}
           onOpenWindow={setActiveWindow}
           onQuickAddDayChange={setQuickAddDayKey}
           onQuickAddOpenChange={setQuickAddOpen}
@@ -801,8 +786,6 @@ export default function AppHome({ joinInviteCode, user }: AppHomeProps) {
           onQuickAddSlotIndexChange={setQuickAddSlotIndex}
           onOpenScheduleModal={openScheduleModal}
           onSelectGroup={setSelectedGroupId}
-          onShareInviteLink={handleShareInviteLink}
-          onShowInviteFormChange={setShowInviteForm}
           onToggleMember={handleToggleMember}
         />
 
@@ -848,6 +831,23 @@ export default function AppHome({ joinInviteCode, user }: AppHomeProps) {
         openWindow={activeWindow}
         onClose={() => setActiveWindow(null)}
         onConfirm={() => void handleShareWindow()}
+      />
+
+      <InviteModal
+        groupName={selectedGroup?.name ?? 'your group'}
+        inviteBusy={workingKey === 'invite-member'}
+        inviteEmail={inviteEmail}
+        inviteLink={inviteLink}
+        inviteName={inviteName}
+        open={inviteModalOpen}
+        pendingInvites={pendingGroupInvites}
+        shareLinkBusy={workingKey === 'share-link'}
+        onClose={() => setInviteModalOpen(false)}
+        onCopyInviteLink={() => void handleCopyInviteLink()}
+        onInviteEmailChange={setInviteEmail}
+        onInviteMember={() => void handleInviteMember()}
+        onInviteNameChange={setInviteName}
+        onShareInviteLink={() => void handleShareInviteLink()}
       />
 
       <ScheduleModal

@@ -11,13 +11,7 @@ export default function DashboardSidebar({
   groupsSectionRef,
   hiddenMemberIds,
   incomingInvites,
-  inviteBusy,
-  inviteEmail,
-  inviteLink,
-  inviteName,
-  inviteSectionRef,
   members,
-  pendingGroupInvites,
   quickAddBusy,
   quickAddDayKey,
   quickAddOpen,
@@ -25,17 +19,11 @@ export default function DashboardSidebar({
   rankedWindows,
   selectedGroup,
   selectedGroupId,
-  shareLinkBusy,
-  showInviteForm,
   workingInviteId,
   onAcceptInvite,
-  onCopyInviteLink,
   onClearWeek,
   onCreateGroup,
   onCreateGroupNameChange,
-  onInviteEmailChange,
-  onInviteMember,
-  onInviteNameChange,
   onOpenWindow,
   onQuickAddDayChange,
   onQuickAddOpenChange,
@@ -43,8 +31,6 @@ export default function DashboardSidebar({
   onQuickAddSlotIndexChange,
   onOpenScheduleModal,
   onSelectGroup,
-  onShareInviteLink,
-  onShowInviteFormChange,
   onToggleMember,
 }: DashboardSidebarProps) {
   return (
@@ -52,9 +38,6 @@ export default function DashboardSidebar({
       <section ref={groupsSectionRef} className={styles.sidebarSection}>
         <div className={styles.sectionHead}>
           <span>Groups</span>
-          <button type="button" onClick={() => onShowInviteFormChange(!showInviteForm)}>
-            {showInviteForm ? 'Hide invite' : 'Invite friend'}
-          </button>
         </div>
 
         <div className={styles.groupPanel}>
@@ -124,77 +107,6 @@ export default function DashboardSidebar({
                   </div>
                 ))}
               </div>
-            </div>
-          )}
-
-          {showInviteForm && (
-            <div ref={inviteSectionRef} className={styles.formBlock}>
-              <label htmlFor="invite-link">Share this invite link</label>
-              <input
-                id="invite-link"
-                className={styles.textInput}
-                type="text"
-                value={inviteLink}
-                readOnly
-                disabled={!selectedGroup}
-              />
-              <div className={styles.buttonRow}>
-                <button
-                  type="button"
-                  className={styles.primaryButton}
-                  onClick={onCopyInviteLink}
-                  disabled={!selectedGroup || shareLinkBusy}
-                >
-                  {shareLinkBusy ? 'Working...' : 'Copy invite link'}
-                </button>
-                <button
-                  type="button"
-                  className={styles.secondaryButton}
-                  onClick={onShareInviteLink}
-                  disabled={!selectedGroup || shareLinkBusy}
-                >
-                  Share link
-                </button>
-              </div>
-
-              <label htmlFor="invite-name">Save an email invite too</label>
-              <input
-                id="invite-name"
-                className={styles.textInput}
-                type="text"
-                placeholder="Friend name"
-                value={inviteName}
-                onChange={(event) => onInviteNameChange(event.target.value)}
-              />
-              <input
-                className={styles.textInput}
-                type="email"
-                placeholder="friend@email.com"
-                value={inviteEmail}
-                onChange={(event) => onInviteEmailChange(event.target.value)}
-              />
-              <button
-                type="button"
-                className={styles.primaryButton}
-                onClick={onInviteMember}
-                disabled={!selectedGroupId || inviteBusy}
-              >
-                {inviteBusy ? 'Saving invite...' : 'Save email invite'}
-              </button>
-
-              {pendingGroupInvites.length > 0 && (
-                <div className={styles.inlineList}>
-                  {pendingGroupInvites.map((invite) => (
-                    <div key={invite.id} className={styles.inlineCard}>
-                      <span>
-                        <strong>{invite.inviteeName || invite.email}</strong>
-                        <small>{invite.email}</small>
-                      </span>
-                      <em>{invite.status}</em>
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
           )}
         </div>
