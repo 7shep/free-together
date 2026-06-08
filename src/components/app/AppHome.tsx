@@ -6,11 +6,14 @@ import {
   createGroup,
   inviteMember,
   joinGroupByInviteCode,
+  listGroupMessages,
   listIncomingInvites,
   listMyGroups,
   loadGroupSnapshot,
+  sendGroupMessage,
   setAvailability,
   type AvailabilityRecord,
+  type GroupChatMessage,
   type GroupInvite,
   type GroupListItem,
   type GroupMember,
@@ -20,6 +23,7 @@ import { buildCalendarWindow } from '../../lib/calendar';
 import { requireSupabase } from '../../lib/supabase';
 import DashboardCalendar from './dashboard/DashboardCalendar';
 import styles from './dashboard/Dashboard.module.css';
+import GroupChatPage from './dashboard/GroupChatPage';
 import GroupsModal from './dashboard/GroupsModal';
 import InviteModal from './dashboard/InviteModal';
 import DashboardSidebar from './dashboard/DashboardSidebar';
@@ -108,11 +112,12 @@ function slotOverlapsShift(slotStart: string, slotEnd: string, shiftStartMinutes
 }
 
 interface AppHomeProps {
+  chatGroupId?: string;
   joinInviteCode?: string;
   user: User;
 }
 
-export default function AppHome({ joinInviteCode, user }: AppHomeProps) {
+export default function AppHome({ chatGroupId, joinInviteCode, user }: AppHomeProps) {
   const [groups, setGroups] = useState<GroupListItem[]>([]);
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
   const [snapshot, setSnapshot] = useState<GroupSnapshot | null>(null);
@@ -127,6 +132,9 @@ export default function AppHome({ joinInviteCode, user }: AppHomeProps) {
   const [inviteEmail, setInviteEmail] = useState('');
   const [groupsModalOpen, setGroupsModalOpen] = useState(false);
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
+  const [groupChatMessages, setGroupChatMessages] = useState<GroupChatMessage[]>([]);
+  const [groupChatLoading, setGroupChatLoading] = useState(false);
+  const [groupChatDraft, setGroupChatDraft] = useState('');
   const [quickAddOpen, setQuickAddOpen] = useState(false);
   const [quickAddDayKey, setQuickAddDayKey] = useState('');
   const [quickAddSlotIndex, setQuickAddSlotIndex] = useState(0);
@@ -145,6 +153,7 @@ export default function AppHome({ joinInviteCode, user }: AppHomeProps) {
   const weekLabel = useMemo(() => formatWeekLabel(weekStart), [weekStart]);
   const rangeStart = calendarDays[0]?.dateKey ?? '';
   const rangeEnd = calendarDays[calendarDays.length - 1]?.dateKey ?? '';
+  const isChatPage = typeof chatGroupId !== 'undefined';
   const selectedGroup = groups.find((group) => group.id === selectedGroupId) ?? null;
   const inviteLink = selectedGroup
     ? `${window.location.origin}${window.location.pathname}#/join/${encodeURIComponent(selectedGroup.inviteCode)}`
@@ -236,8 +245,8 @@ export default function AppHome({ joinInviteCode, user }: AppHomeProps) {
   };
 
   useEffect(() => {
-    void refreshDashboard();
-  }, [user.email, user.id]);
+    void refreshDashboard(chatGroupId);
+  }, [chatGroupId, user.email, user.id]);
 
   useEffect(() => {
     if (!selectedGroupId) {
@@ -291,6 +300,16 @@ export default function AppHome({ joinInviteCode, user }: AppHomeProps) {
       cancelled = true;
     };
   }, [joinInviteCode, user]);
+
+  useEffect(() => {
+    if (!isChatPage || !chatGroupId) {
+      return;
+    }
+
+    if (selectedGroupId !== chatGroupId) {
+      setSelectedGroupId(chatGroupId);
+    }
+  }, [chatGroupId, isChatPage, selectedGroupId]);
 
   const members = useMemo<DecoratedMember[]>(
     () =>
@@ -373,6 +392,15 @@ export default function AppHome({ joinInviteCode, user }: AppHomeProps) {
     setGroupsModalOpen(true);
   };
 
+  const openGroupChatModal = () => {
+    if (!selectedGroupId) {
+      setNotice({ tone: 'error', text: 'Create or select a group before you open the group chat.' });
+      return;
+    }
+
+    window.location.hash = `#/app/chat/${encodeURIComponent(selectedGroupId)}`;
+  };
+
   const openInviteModal = () => {
     if (!selectedGroupId) {
       setNotice({ tone: 'error', text: 'Create or select a group before you invite someone.' });
@@ -380,6 +408,22 @@ export default function AppHome({ joinInviteCode, user }: AppHomeProps) {
     }
 
     setInviteModalOpen(true);
+  };
+
+  const refreshGroupChat = async (groupId: string) => {
+    setGroupChatLoading(true);
+
+    try {
+      const nextMessages = await listGroupMessages(groupId);
+      setGroupChatMessages(nextMessages);
+    } catch (error) {
+      setNotice({
+        tone: 'error',
+        text: messageFromError(error, 'Unable to load the group chat right now.'),
+      });
+    } finally {
+      setGroupChatLoading(false);
+    }
   };
 
   const handleCreateGroup = async () => {
@@ -393,6 +437,9 @@ export default function AppHome({ joinInviteCode, user }: AppHomeProps) {
       setNotice({ tone: 'success', text: 'Group created. Start inviting friends or add your own schedule.' });
       setToast('Group created');
       await refreshDashboard(groupId);
+      if (isChatPage) {
+        window.location.hash = `#/app/chat/${encodeURIComponent(groupId)}`;
+      }
       setGroupsModalOpen(false);
       setInviteModalOpen(true);
     } catch (error) {
@@ -484,6 +531,26 @@ export default function AppHome({ joinInviteCode, user }: AppHomeProps) {
       setNotice({
         tone: 'error',
         text: messageFromError(error, 'Unable to share that invite link right now.'),
+      });
+    } finally {
+      setWorkingKey(null);
+    }
+  };
+
+  const handleSendGroupMessage = async () => {
+    if (!selectedGroupId || !groupChatDraft.trim()) return;
+
+    setWorkingKey('send-group-message');
+
+    try {
+      await sendGroupMessage(user, selectedGroupId, groupChatDraft);
+      setGroupChatDraft('');
+      setToast('Message sent');
+      await refreshGroupChat(selectedGroupId);
+    } catch (error) {
+      setNotice({
+        tone: 'error',
+        text: messageFromError(error, 'Unable to send that message right now.'),
       });
     } finally {
       setWorkingKey(null);
@@ -741,6 +808,35 @@ export default function AppHome({ joinInviteCode, user }: AppHomeProps) {
     window.location.hash = '#/auth/login';
   };
 
+  useEffect(() => {
+    if (!isChatPage || !selectedGroupId) {
+      return;
+    }
+
+    void refreshGroupChat(selectedGroupId);
+
+    const client = requireSupabase();
+    const channel = client
+      .channel(`group-chat:${selectedGroupId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'group_messages',
+          filter: `group_id=eq.${selectedGroupId}`,
+        },
+        () => {
+          void refreshGroupChat(selectedGroupId);
+        },
+      )
+      .subscribe();
+
+    return () => {
+      void client.removeChannel(channel);
+    };
+  }, [isChatPage, selectedGroupId]);
+
   const calendarHint = selectedGroup
     ? 'Click any outlined window to mark yourself free. Bright green overlays mean every visible friend overlaps there.'
     : 'Create or join a group to unlock the timeline.';
@@ -748,64 +844,89 @@ export default function AppHome({ joinInviteCode, user }: AppHomeProps) {
   return (
     <div className={styles.appShell}>
       <DashboardTopbar
+        chatDisabled={!selectedGroupId}
         groupName={selectedGroup?.name ?? 'Pick a group'}
         groupSubtitle={selectedGroup ? `${visibleMembers.length} visible members` : user.email ?? 'Signed in'}
         groupsOpen={groupsModalOpen}
         inviteDisabled={!selectedGroupId}
         members={members}
+        mode={isChatPage ? 'chat' : 'dashboard'}
+        scheduleDisabled={!selectedGroupId}
         weekLabel={weekLabel}
+        onBackToDashboard={() => {
+          window.location.hash = '#/app';
+        }}
         onNextWeek={() => setWeekStart((current) => shiftWeek(current, 1))}
+        onOpenGroupChat={openGroupChatModal}
         onOpenGroups={openGroupsModal}
         onOpenInvite={openInviteModal}
+        onOpenSchedule={openScheduleModal}
         onPrevWeek={() => setWeekStart((current) => shiftWeek(current, -1))}
         onSignOut={handleSignOut}
         userLabel={initials(user.email ?? 'Y')}
       />
 
-      <div className={styles.dashboardBody}>
-        <DashboardSidebar
-          calendarDays={calendarDays}
-          clearDisabled={!selectedGroupId || workingKey === 'clear-week'}
-          hiddenMemberIds={hiddenMemberIds}
+      {isChatPage ? (
+        <GroupChatPage
+          busy={workingKey === 'send-group-message'}
+          draft={groupChatDraft}
+          groupName={selectedGroup?.name ?? 'Group chat'}
+          loading={groupChatLoading || loadingDashboard}
           members={members}
-          quickAddBusy={workingKey === 'quick-add'}
-          quickAddDayKey={quickAddDayKey}
-          quickAddOpen={quickAddOpen}
-          quickAddSlotIndex={quickAddSlotIndex}
-          rankedWindows={rankedWindows}
-          selectedGroupId={selectedGroupId}
-          onClearWeek={handleClearWeek}
-          onOpenWindow={setActiveWindow}
-          onQuickAddDayChange={setQuickAddDayKey}
-          onQuickAddOpenChange={setQuickAddOpen}
-          onQuickAddSave={handleQuickAdd}
-          onQuickAddSlotIndexChange={setQuickAddSlotIndex}
-          onOpenScheduleModal={openScheduleModal}
-          onToggleMember={handleToggleMember}
+          messages={groupChatMessages}
+          onBack={() => {
+            window.location.hash = '#/app';
+          }}
+          onDraftChange={setGroupChatDraft}
+          onSendMessage={() => void handleSendGroupMessage()}
+          userId={user.id}
         />
+      ) : (
+        <div className={styles.dashboardBody}>
+          <DashboardSidebar
+            calendarDays={calendarDays}
+            clearDisabled={!selectedGroupId || workingKey === 'clear-week'}
+            hiddenMemberIds={hiddenMemberIds}
+            members={members}
+            quickAddBusy={workingKey === 'quick-add'}
+            quickAddDayKey={quickAddDayKey}
+            quickAddOpen={quickAddOpen}
+            quickAddSlotIndex={quickAddSlotIndex}
+            rankedWindows={rankedWindows}
+            selectedGroupId={selectedGroupId}
+            onClearWeek={handleClearWeek}
+            onOpenWindow={setActiveWindow}
+            onQuickAddDayChange={setQuickAddDayKey}
+            onQuickAddOpenChange={setQuickAddOpen}
+            onQuickAddSave={handleQuickAdd}
+            onQuickAddSlotIndexChange={setQuickAddSlotIndex}
+            onOpenScheduleModal={openScheduleModal}
+            onToggleMember={handleToggleMember}
+          />
 
-        <DashboardCalendar
-          availabilityBySlot={availabilityBySlot}
-          calendarDays={calendarDays}
-          emptyMessage={
-            loadingDashboard
-              ? 'Loading your groups from Supabase...'
-              : loadingGroup
-                ? 'Refreshing live availability...'
-                : calendarHint
-          }
-          loading={loadingGroup}
-          members={members}
-          mySlotKeys={mySlotKeys}
-          openWindow={setActiveWindow}
-          perfectWindows={perfectWindows}
-          scrollRef={mainScrollRef}
-          selectedGroupName={selectedGroup?.name ?? null}
-          toggleAvailability={handleToggleAvailability}
-          visibleMemberIds={visibleMemberIds}
-          workingKey={workingKey}
-        />
-      </div>
+          <DashboardCalendar
+            availabilityBySlot={availabilityBySlot}
+            calendarDays={calendarDays}
+            emptyMessage={
+              loadingDashboard
+                ? 'Loading your groups from Supabase...'
+                : loadingGroup
+                  ? 'Refreshing live availability...'
+                  : calendarHint
+            }
+            loading={loadingGroup}
+            members={members}
+            mySlotKeys={mySlotKeys}
+            openWindow={setActiveWindow}
+            perfectWindows={perfectWindows}
+            scrollRef={mainScrollRef}
+            selectedGroupName={selectedGroup?.name ?? null}
+            toggleAvailability={handleToggleAvailability}
+            visibleMemberIds={visibleMemberIds}
+            workingKey={workingKey}
+          />
+        </div>
+      )}
 
       {notice && (
         <div
@@ -842,6 +963,9 @@ export default function AppHome({ joinInviteCode, user }: AppHomeProps) {
         onCreateGroupNameChange={setCreateGroupName}
         onSelectGroup={(groupId) => {
           setSelectedGroupId(groupId);
+          if (isChatPage) {
+            window.location.hash = `#/app/chat/${encodeURIComponent(groupId)}`;
+          }
           setGroupsModalOpen(false);
         }}
       />

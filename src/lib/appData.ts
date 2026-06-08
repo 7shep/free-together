@@ -27,6 +27,16 @@ export interface GroupInvite {
   status: 'pending' | 'accepted' | 'revoked';
 }
 
+export interface GroupChatMessage {
+  body: string;
+  createdAt: string;
+  groupId: string;
+  id: string;
+  senderEmail: string;
+  senderName: string;
+  userId: string;
+}
+
 export interface AvailabilityRecord {
   slotDate: string;
   slotIndex: number;
@@ -226,6 +236,63 @@ export async function inviteMember(groupId: string, email: string, inviteeName: 
     },
     { onConflict: 'group_id,email' },
   );
+
+  if (error) throw error;
+}
+
+export async function listGroupMessages(groupId: string): Promise<GroupChatMessage[]> {
+  const client = requireSupabase();
+
+  const { data: messages, error: messageError } = await client
+    .from('group_messages')
+    .select('id, group_id, user_id, body, created_at')
+    .eq('group_id', groupId)
+    .order('created_at', { ascending: true });
+
+  if (messageError) throw messageError;
+  if (!messages?.length) return [];
+
+  const userIds = [...new Set(messages.map((message) => message.user_id))];
+  const { data: profiles, error: profileError } = await client
+    .from('profiles')
+    .select('id, full_name, email')
+    .in('id', userIds);
+
+  if (profileError) throw profileError;
+
+  const profilesById = new Map(
+    (profiles ?? []).map((profile) => [
+      profile.id,
+      {
+        email: profile.email,
+        fullName: profile.full_name,
+      },
+    ]),
+  );
+
+  return messages.map((message) => {
+    const sender = profilesById.get(message.user_id);
+    return {
+      body: message.body,
+      createdAt: message.created_at,
+      groupId: message.group_id,
+      id: message.id,
+      senderEmail: sender?.email ?? '',
+      senderName: sender?.fullName ?? 'Unknown member',
+      userId: message.user_id,
+    };
+  });
+}
+
+export async function sendGroupMessage(user: User, groupId: string, body: string) {
+  const client = requireSupabase();
+  await syncProfileBestEffort(user);
+
+  const { error } = await client.from('group_messages').insert({
+    body: body.trim(),
+    group_id: groupId,
+    user_id: user.id,
+  });
 
   if (error) throw error;
 }

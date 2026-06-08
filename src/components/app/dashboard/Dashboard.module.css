@@ -185,6 +185,12 @@
   flex: 1;
 }
 
+.topbarActions {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .weekNav {
   display: inline-flex;
   align-items: center;
@@ -192,6 +198,7 @@
 }
 
 .weekButton,
+.iconActionButton,
 .inviteButton,
 .signOutButton,
 .primaryButton,
@@ -220,6 +227,7 @@
 }
 
 .weekButton:hover,
+.iconActionButton:hover,
 .inviteButton:hover,
 .signOutButton:hover,
 .primaryButton:hover,
@@ -257,6 +265,18 @@
   font-weight: 600;
 }
 
+.iconActionButton {
+  width: 42px;
+  min-width: 42px;
+  height: 42px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 999px;
+  cursor: pointer;
+  background: var(--surface);
+  color: var(--ink);
+}
+
 .inviteButton,
 .primaryButton,
 .lockButton,
@@ -277,7 +297,14 @@
   color: var(--ink);
 }
 
+.chatBackButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .inviteButton:disabled,
+.iconActionButton:disabled,
 .primaryButton:disabled,
 .secondaryButton:disabled,
 .inlineButton:disabled,
@@ -565,6 +592,329 @@
   background:
     radial-gradient(circle at top center, color-mix(in srgb, var(--pink) 8%, transparent), transparent 34%),
     var(--bg);
+}
+
+/* ─── group chat (mirrors the Chat.html design) ─── */
+.chatScreen {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - var(--nav-h));
+  height: calc(100dvh - var(--nav-h));
+  min-height: 520px;
+  background:
+    radial-gradient(circle at top center, color-mix(in srgb, var(--mint) 9%, transparent), transparent 36%),
+    radial-gradient(circle at bottom right, color-mix(in srgb, var(--pink) 9%, transparent), transparent 34%),
+    var(--bg);
+}
+
+.chHead {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 22px;
+  background: color-mix(in srgb, var(--surface) 94%, white);
+  border-bottom: var(--border) solid var(--ink);
+}
+
+.chTitle {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.chTitle h1 {
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-size: 1.2rem;
+  font-weight: 700;
+  line-height: 1.1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chSub {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 2px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--ink-soft);
+}
+
+.chSub b {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.chPresence {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.chPip {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--free);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--free) 26%, transparent);
+}
+
+.chActions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chIconButton {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border: var(--border) solid var(--ink);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition:
+    transform 0.14s cubic-bezier(0.2, 0.7, 0.3, 1),
+    box-shadow 0.14s ease,
+    background 0.14s ease;
+}
+
+.chIconButton:hover {
+  transform: translate(-1px, -2px);
+  box-shadow: var(--shadow);
+}
+
+.chIconButtonCalendar {
+  background: color-mix(in srgb, var(--free) 18%, var(--surface));
+}
+
+.thread {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 22px 26px 14px;
+  overflow-y: auto;
+}
+
+.threadState {
+  margin: auto;
+  max-width: 340px;
+  padding: 14px 18px;
+  border-radius: 16px;
+  border: var(--border) dashed color-mix(in srgb, var(--ink) 18%, transparent);
+  background: color-mix(in srgb, var(--bg) 55%, white);
+  color: var(--ink-soft);
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.daySep {
+  align-self: center;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 14px 0 6px;
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.daySep::before,
+.daySep::after {
+  content: '';
+  display: block;
+  width: 36px;
+  height: 2px;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--ink) 18%, transparent);
+}
+
+.msg {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  max-width: 78%;
+}
+
+.msgMine {
+  align-self: flex-end;
+  flex-direction: row-reverse;
+}
+
+.msgAv {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: var(--border) solid var(--ink);
+  color: #fff;
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  box-shadow: var(--shadow-sm);
+  flex: none;
+}
+
+.msgContent {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.msgMine .msgContent {
+  align-items: flex-end;
+}
+
+.msgMeta {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 4px;
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.msgMine .msgMeta {
+  flex-direction: row-reverse;
+}
+
+.msgMeta b {
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-size: 0.88rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+
+.msgBubble {
+  padding: 0.7em 0.95em;
+  border: var(--border) solid var(--ink);
+  border-radius: 16px;
+  border-bottom-left-radius: 5px;
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  font-size: 0.97rem;
+  line-height: 1.42;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-wrap: anywhere;
+}
+
+.msgMine .msgBubble {
+  border-bottom-left-radius: 16px;
+  border-bottom-right-radius: 5px;
+  background: var(--ink);
+  color: var(--bg);
+}
+
+.msgRun .msgAv {
+  visibility: hidden;
+}
+
+.msgRun .msgMeta {
+  display: none;
+}
+
+.msgRun .msgBubble {
+  border-top-left-radius: 5px;
+}
+
+.msgMine.msgRun .msgBubble {
+  border-top-left-radius: 16px;
+  border-top-right-radius: 5px;
+  border-bottom-right-radius: 5px;
+}
+
+.composer {
+  flex: none;
+  padding: 14px 22px 20px;
+  background: var(--bg);
+  border-top: var(--border) solid color-mix(in srgb, var(--ink) 14%, transparent);
+}
+
+.inputRow {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  padding: 8px 8px 8px 16px;
+  border: var(--border) solid var(--ink);
+  border-radius: 18px;
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.inputRow:focus-within {
+  box-shadow: var(--shadow);
+}
+
+.composerInput {
+  flex: 1;
+  max-height: 160px;
+  padding: 9px 4px;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  resize: none;
+  color: var(--ink);
+  font: inherit;
+  font-size: 1rem;
+  line-height: 1.4;
+}
+
+.composerInput::placeholder {
+  color: var(--ink-soft);
+}
+
+.sendButton {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  flex: none;
+  border: var(--border) solid var(--ink);
+  border-radius: 13px;
+  background: var(--primary);
+  color: var(--primary-ink);
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.12s ease;
+}
+
+.sendButton:hover:not(:disabled) {
+  transform: translate(-1px, -2px);
+  box-shadow: var(--shadow);
+}
+
+.sendButton:active:not(:disabled) {
+  transform: translate(1px, 2px);
+  box-shadow: 1px 1px 0 var(--ink);
+}
+
+.sendButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+  background: color-mix(in srgb, var(--ink) 18%, transparent);
+  border-color: color-mix(in srgb, var(--ink) 30%, transparent);
+  box-shadow: none;
 }
 
 .calendarStickyHeader {
@@ -923,8 +1273,86 @@
   text-align: left;
 }
 
+.chatModalCard {
+  width: min(100%, 500px);
+  text-align: left;
+}
+
+.chatMeta {
+  margin-top: 14px;
+  color: var(--ink-soft);
+  font-size: 0.84rem;
+  font-weight: 600;
+}
+
+.chatThread {
+  display: grid;
+  gap: 10px;
+  min-height: 240px;
+  max-height: 360px;
+  margin-top: 16px;
+  padding-right: 4px;
+  overflow-y: auto;
+}
+
+.chatMessage {
+  padding: 14px;
+  border-radius: 16px;
+  border: var(--border) solid color-mix(in srgb, var(--ink) 14%, transparent);
+  background: color-mix(in srgb, var(--bg) 55%, white);
+}
+
+.chatMessageHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.chatMessageHead strong {
+  font-weight: 700;
+}
+
+.chatMessageHead small,
+.chatMessageEmail {
+  color: var(--ink-soft);
+  font-size: 0.8rem;
+}
+
+.chatMessageEmail {
+  margin-top: 2px;
+}
+
+.chatMessage p {
+  margin-top: 10px;
+  white-space: pre-wrap;
+  line-height: 1.45;
+}
+
+.chatComposer {
+  display: grid;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.chatComposer label {
+  color: var(--ink-soft);
+  font-size: 0.84rem;
+  font-weight: 600;
+}
+
+.chatInput {
+  min-height: 108px;
+  padding: 12px 14px;
+  resize: vertical;
+}
+
 .groupsModalIcon {
   background: var(--sun);
+}
+
+.chatModalIcon {
+  background: var(--mint);
 }
 
 .scheduleModalIcon {
@@ -1016,6 +1444,11 @@
 }
 
 @media (max-width: 640px) {
+  .topbarActions {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
   .sidebar {
     padding: 14px;
   }
@@ -1025,10 +1458,21 @@
   }
 
   .inviteButton,
+  .iconActionButton,
   .signOutButton {
     min-height: 38px;
-    padding: 0 12px;
     font-size: 0.82rem;
+  }
+
+  .inviteButton,
+  .signOutButton {
+    padding: 0 12px;
+  }
+
+  .iconActionButton {
+    width: 38px;
+    min-width: 38px;
+    padding: 0;
   }
 
   .weekLabel {
@@ -1043,5 +1487,21 @@
 
   .calendarGrid {
     min-width: 820px;
+  }
+
+  .chHead {
+    padding: 12px 16px;
+  }
+
+  .thread {
+    padding: 16px 14px 10px;
+  }
+
+  .msg {
+    max-width: 88%;
+  }
+
+  .composer {
+    padding: 12px 14px 16px;
   }
 }

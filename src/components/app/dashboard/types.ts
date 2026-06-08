@@ -1,6 +1,6 @@
 import type { MutableRefObject } from 'react';
 import type { CalendarDay, CalendarSlot } from '../../../lib/calendar';
-import type { GroupInvite, GroupListItem, GroupMember } from '../../../lib/appData';
+import type { GroupChatMessage, GroupInvite, GroupListItem, GroupMember } from '../../../lib/appData';
 
 export interface DecoratedMember extends GroupMember {
   color: string;
@@ -38,18 +38,37 @@ export interface DashboardSidebarProps {
 }
 
 export interface DashboardTopbarProps {
+  chatDisabled: boolean;
   groupName: string;
   groupSubtitle: string;
   groupsOpen: boolean;
   inviteDisabled: boolean;
   members: DecoratedMember[];
+  mode?: 'chat' | 'dashboard';
+  scheduleDisabled: boolean;
   weekLabel: string;
+  onBackToDashboard?: () => void;
   onNextWeek: () => void;
+  onOpenGroupChat: () => void;
   onOpenGroups: () => void;
   onOpenInvite: () => void;
+  onOpenSchedule: () => void;
   onPrevWeek: () => void;
   onSignOut: () => void;
   userLabel: string;
+}
+
+export interface GroupChatPageProps {
+  busy: boolean;
+  draft: string;
+  groupName: string;
+  loading: boolean;
+  members: DecoratedMember[];
+  messages: GroupChatMessage[];
+  onBack: () => void;
+  onDraftChange: (value: string) => void;
+  onSendMessage: () => void;
+  userId: string;
 }
 
 export interface LockInModalProps {

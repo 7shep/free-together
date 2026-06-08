@@ -1,5 +1,5 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { User } from '@supabase/supabase-js';
 import AppHome from '../components/app/AppHome';
@@ -9,15 +9,26 @@ vi.mock('../lib/appData', () => ({
   acceptInvite: vi.fn(),
   setAvailability: vi.fn(),
   clearAvailabilityRange: vi.fn(),
+  listGroupMessages: vi.fn(),
   listMyGroups: vi.fn(),
   listIncomingInvites: vi.fn(),
   loadGroupSnapshot: vi.fn(),
   inviteMember: vi.fn(),
   joinGroupByInviteCode: vi.fn(),
+  sendGroupMessage: vi.fn(),
 }));
 
+const mockRemoveChannel = vi.fn().mockResolvedValue(undefined);
+const mockChannelSubscribe = vi.fn(() => ({ unsubscribe: vi.fn() }));
+const mockChannelOn = vi.fn(() => ({ subscribe: mockChannelSubscribe }));
+const mockChannel = vi.fn(() => ({ on: mockChannelOn }));
+
 vi.mock('../lib/supabase', () => ({
-  requireSupabase: vi.fn(() => ({ auth: { signOut: vi.fn().mockResolvedValue({}) } })),
+  requireSupabase: vi.fn(() => ({
+    auth: { signOut: vi.fn().mockResolvedValue({}) },
+    channel: mockChannel,
+    removeChannel: mockRemoveChannel,
+  })),
   isSupabaseConfigured: true,
   supabase: null,
 }));
@@ -29,9 +40,11 @@ import {
   clearAvailabilityRange,
   inviteMember,
   joinGroupByInviteCode,
+  listGroupMessages,
   listMyGroups,
   listIncomingInvites,
   loadGroupSnapshot,
+  sendGroupMessage,
 } from '../lib/appData';
 
 const mockListMyGroups = vi.mocked(listMyGroups);
@@ -43,6 +56,8 @@ const mockSetAvailability = vi.mocked(setAvailability);
 const mockClearAvailabilityRange = vi.mocked(clearAvailabilityRange);
 const mockInviteMember = vi.mocked(inviteMember);
 const mockJoinGroupByInviteCode = vi.mocked(joinGroupByInviteCode);
+const mockListGroupMessages = vi.mocked(listGroupMessages);
+const mockSendGroupMessage = vi.mocked(sendGroupMessage);
 
 const mockUser: User = {
   id: 'user-1',
@@ -74,6 +89,7 @@ beforeEach(() => {
   mockListIncomingInvites.mockResolvedValue([]);
   mockLoadGroupSnapshot.mockResolvedValue(emptySnapshot);
   vi.stubGlobal('scrollTo', vi.fn());
+  mockListGroupMessages.mockResolvedValue([]);
   window.location.hash = '#/app';
 });
 
@@ -236,6 +252,84 @@ describe('AppHome - invite modal', () => {
 
     await waitFor(() => {
       expect(mockInviteMember).toHaveBeenCalledWith('g-1', 'bob@example.com', 'Bob');
+    });
+  });
+});
+
+describe('AppHome - topbar actions', () => {
+  it('opens the schedule modal from the topbar button', async () => {
+    mockListMyGroups.mockResolvedValue([mockGroup]);
+
+    render(<AppHome user={mockUser} />);
+    await waitFor(() => expect(mockLoadGroupSnapshot).toHaveBeenCalled());
+
+    await userEvent.click(within(screen.getByRole('banner')).getByRole('button', { name: 'Add schedule' }));
+
+    expect(screen.getByRole('dialog', { name: 'Add Schedule' })).toBeInTheDocument();
+  });
+
+  it('navigates to the dedicated chat route from the topbar button', async () => {
+    mockListMyGroups.mockResolvedValue([mockGroup]);
+
+    render(<AppHome user={mockUser} />);
+    await waitFor(() => expect(mockLoadGroupSnapshot).toHaveBeenCalled());
+
+    await userEvent.click(screen.getByRole('button', { name: 'Group chat' }));
+
+    expect(window.location.hash).toBe('#/app/chat/g-1');
+  });
+
+  it('loads and sends messages from the dedicated chat page', async () => {
+    mockListMyGroups.mockResolvedValue([mockGroup]);
+    mockListGroupMessages
+      .mockResolvedValueOnce([
+        {
+          id: 'msg-1',
+          groupId: 'g-1',
+          userId: 'user-2',
+          body: 'Anyone free Thursday?',
+          createdAt: '2026-06-07T10:00:00Z',
+          senderEmail: 'bob@example.com',
+          senderName: 'Bob',
+        },
+      ])
+      .mockResolvedValueOnce([
+        {
+          id: 'msg-1',
+          groupId: 'g-1',
+          userId: 'user-2',
+          body: 'Anyone free Thursday?',
+          createdAt: '2026-06-07T10:00:00Z',
+          senderEmail: 'bob@example.com',
+          senderName: 'Bob',
+        },
+        {
+          id: 'msg-2',
+          groupId: 'g-1',
+          userId: 'user-1',
+          body: 'I am free after 6.',
+          createdAt: '2026-06-07T10:01:00Z',
+          senderEmail: 'alice@example.com',
+          senderName: 'Alice',
+        },
+      ]);
+    mockSendGroupMessage.mockResolvedValue(undefined);
+
+    render(<AppHome chatGroupId="g-1" user={mockUser} />);
+    await waitFor(() => expect(mockLoadGroupSnapshot).toHaveBeenCalled());
+
+    await waitFor(() => expect(mockListGroupMessages).toHaveBeenCalledWith('g-1'));
+    expect(screen.getByRole('heading', { name: 'Weekend Crew' })).toBeInTheDocument();
+    expect(screen.getByText('Anyone free Thursday?')).toBeInTheDocument();
+
+    await userEvent.type(screen.getByLabelText('Message'), 'I am free after 6.');
+    await userEvent.click(screen.getByRole('button', { name: 'Send message' }));
+
+    await waitFor(() => {
+      expect(mockSendGroupMessage).toHaveBeenCalledWith(mockUser, 'g-1', 'I am free after 6.');
+    });
+    await waitFor(() => {
+      expect(screen.getByText('I am free after 6.')).toBeInTheDocument();
     });
   });
 });

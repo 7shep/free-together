@@ -35,6 +35,7 @@ function AppLoading() {
 export default function App() {
   const route = useAuthRoute();
   const { user, loading } = useSupabaseSession();
+  const appHash = route.view === 'chat' ? `#/app/chat${route.groupId ? `/${encodeURIComponent(route.groupId)}` : ''}` : '#/app';
 
   if (loading && route.view !== 'landing') {
     return <AppLoading />;
@@ -48,16 +49,16 @@ export default function App() {
     return <AuthScreen initialMode="signup" onSuccess={() => {}} preserveHashOnModeChange />;
   }
 
-  if (route.view === 'app') {
+  if (route.view === 'app' || route.view === 'chat') {
     if (!isSupabaseConfigured) {
-      return <AuthScreen initialMode="login" onSuccess={() => (window.location.hash = '#/app')} />;
+      return <AuthScreen initialMode="login" onSuccess={() => (window.location.hash = appHash)} />;
     }
 
     if (!user) {
-      return <AuthScreen initialMode="login" onSuccess={() => (window.location.hash = '#/app')} />;
+      return <AuthScreen initialMode="login" onSuccess={() => (window.location.hash = appHash)} />;
     }
 
-    return <AppHome user={user} />;
+    return <AppHome chatGroupId={route.view === 'chat' ? route.groupId : undefined} user={user} />;
   }
 
   if (route.view === 'join') {

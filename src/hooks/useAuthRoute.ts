@@ -7,6 +7,7 @@ export type Route =
   | { view: 'landing' }
   | { view: 'auth'; mode: AuthMode }
   | { view: 'app' }
+  | { view: 'chat'; groupId?: string }
   | { view: 'join'; code: string };
 
 /**
@@ -20,6 +21,10 @@ function parse(): Route {
   if (hash.startsWith('#/join/')) {
     const code = decodeURIComponent(hash.slice('#/join/'.length)).trim();
     return code ? { view: 'join', code } : { view: 'landing' };
+  }
+  if (hash.startsWith('#/app/chat')) {
+    const groupId = decodeURIComponent(hash.slice('#/app/chat/'.length)).trim();
+    return groupId ? { view: 'chat', groupId } : { view: 'chat' };
   }
   if (hash.startsWith('#/app')) {
     return { view: 'app' };

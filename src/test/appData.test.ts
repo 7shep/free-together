@@ -8,9 +8,11 @@ import {
   joinGroupByInviteCode,
   acceptInvite,
   inviteMember,
+  listGroupMessages,
   setAvailability,
   clearAvailabilityRange,
   revokeInvite,
+  sendGroupMessage,
   leaveGroup,
 } from '../lib/appData';
 import { requireSupabase } from '../lib/supabase';
@@ -338,6 +340,71 @@ describe('inviteMember', () => {
 });
 
 // ─── setAvailability ─────────────────────────────────────────────────────────
+
+describe('listGroupMessages', () => {
+  it('returns empty array when there are no messages', async () => {
+    const messagesQ = chain({ data: [], error: null });
+    mockRequireSupabase.mockReturnValue({ from: vi.fn(() => messagesQ) } as any);
+
+    await expect(listGroupMessages('g-1')).resolves.toEqual([]);
+  });
+
+  it('attaches sender profile details to each message', async () => {
+    const messagesQ = chain({
+      data: [
+        { id: 'msg-1', group_id: 'g-1', user_id: 'user-2', body: 'Hello', created_at: '2026-06-07T10:00:00Z' },
+      ],
+      error: null,
+    });
+    const profilesQ = chain({
+      data: [{ id: 'user-2', full_name: 'Bob', email: 'bob@example.com' }],
+      error: null,
+    });
+
+    mockRequireSupabase.mockReturnValue({
+      from: vi.fn().mockReturnValueOnce(messagesQ).mockReturnValueOnce(profilesQ),
+    } as any);
+
+    await expect(listGroupMessages('g-1')).resolves.toEqual([
+      expect.objectContaining({
+        id: 'msg-1',
+        body: 'Hello',
+        senderName: 'Bob',
+        senderEmail: 'bob@example.com',
+      }),
+    ]);
+  });
+});
+
+describe('sendGroupMessage', () => {
+  it('inserts a trimmed message for the current user', async () => {
+    const profilesQ = chain({ data: null, error: null });
+    const messagesQ = chain({ data: null, error: null });
+
+    mockRequireSupabase.mockReturnValue({
+      from: vi.fn().mockReturnValueOnce(profilesQ).mockReturnValueOnce(messagesQ),
+    } as any);
+
+    await sendGroupMessage(mockUser, 'g-1', '  Hello group  ');
+
+    expect(messagesQ.insert).toHaveBeenCalledWith({
+      body: 'Hello group',
+      group_id: 'g-1',
+      user_id: 'user-1',
+    });
+  });
+
+  it('throws when the insert fails', async () => {
+    const profilesQ = chain({ data: null, error: null });
+    const messagesQ = chain({ data: null, error: { message: 'insert failed' } });
+
+    mockRequireSupabase.mockReturnValue({
+      from: vi.fn().mockReturnValueOnce(profilesQ).mockReturnValueOnce(messagesQ),
+    } as any);
+
+    await expect(sendGroupMessage(mockUser, 'g-1', 'Hello')).rejects.toEqual({ message: 'insert failed' });
+  });
+});
 
 describe('setAvailability', () => {
   it('upserts a slot when available is true', async () => {
