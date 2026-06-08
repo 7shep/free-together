@@ -241,8 +241,8 @@ export default function AuthForm({ mode, onModeChange, onSuccess }: AuthFormProp
 
         {!isLogin && (
           <p className={styles.terms}>
-            By creating a group you agree to our <a href="#">Terms</a> &amp;{' '}
-            <a href="#">Privacy Policy</a>.
+            By creating a group you agree to our <a href="/terms/">Terms</a> &amp;{' '}
+            <a href="/privacy/">Privacy Policy</a>.
           </p>
         )}
 

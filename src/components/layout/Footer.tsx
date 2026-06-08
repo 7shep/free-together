@@ -15,6 +15,8 @@ export default function Footer() {
           <a href="#how">How it works</a>
           <a href="#features">Features</a>
           <a href="#/auth">Get started</a>
+          <a href="/terms/">Terms</a>
+          <a href="/privacy/">Privacy</a>
         </nav>
 
         <span className={styles.copy}>Made for crews who keep missing each other.</span>
