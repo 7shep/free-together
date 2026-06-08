@@ -28,6 +28,7 @@ import {
   setAvailability,
   clearAvailabilityRange,
   inviteMember,
+  joinGroupByInviteCode,
   listMyGroups,
   listIncomingInvites,
   loadGroupSnapshot,
@@ -41,6 +42,7 @@ const mockAcceptInvite = vi.mocked(acceptInvite);
 const mockSetAvailability = vi.mocked(setAvailability);
 const mockClearAvailabilityRange = vi.mocked(clearAvailabilityRange);
 const mockInviteMember = vi.mocked(inviteMember);
+const mockJoinGroupByInviteCode = vi.mocked(joinGroupByInviteCode);
 
 const mockUser: User = {
   id: 'user-1',
@@ -72,7 +74,13 @@ beforeEach(() => {
   mockListIncomingInvites.mockResolvedValue([]);
   mockLoadGroupSnapshot.mockResolvedValue(emptySnapshot);
   vi.stubGlobal('scrollTo', vi.fn());
+  window.location.hash = '#/app';
 });
+
+async function openGroupsModal(label: RegExp) {
+  await userEvent.click(screen.getByRole('button', { name: label }));
+  expect(screen.getByRole('dialog', { name: 'Manage your crews' })).toBeInTheDocument();
+}
 
 describe('AppHome - create group', () => {
   it('calls createGroup with the typed name and shows a success notice', async () => {
@@ -82,6 +90,7 @@ describe('AppHome - create group', () => {
     render(<AppHome user={mockUser} />);
     await waitFor(() => expect(mockListMyGroups).toHaveBeenCalled());
 
+    await openGroupsModal(/Pick a group/i);
     await userEvent.type(screen.getByLabelText('Create a new group'), 'Weekend Crew');
     await userEvent.click(screen.getByRole('button', { name: 'Create group' }));
 
@@ -97,6 +106,7 @@ describe('AppHome - create group', () => {
     render(<AppHome user={mockUser} />);
     await waitFor(() => expect(mockListMyGroups).toHaveBeenCalled());
 
+    await openGroupsModal(/Pick a group/i);
     await userEvent.click(screen.getByRole('button', { name: 'Create group' }));
 
     expect(mockCreateGroup).not.toHaveBeenCalled();
@@ -108,6 +118,7 @@ describe('AppHome - create group', () => {
     render(<AppHome user={mockUser} />);
     await waitFor(() => expect(mockListMyGroups).toHaveBeenCalled());
 
+    await openGroupsModal(/Pick a group/i);
     await userEvent.type(screen.getByLabelText('Create a new group'), 'Crew');
     await userEvent.click(screen.getByRole('button', { name: 'Create group' }));
 
@@ -134,8 +145,9 @@ describe('AppHome - accept invite', () => {
     mockListMyGroups.mockResolvedValueOnce([]).mockResolvedValue([{ ...mockGroup, id: 'g-2', name: 'Summer Crew' }]);
 
     render(<AppHome user={mockUser} />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Accept' })).toBeInTheDocument());
+    await waitFor(() => expect(mockListMyGroups).toHaveBeenCalled());
 
+    await openGroupsModal(/Pick a group/i);
     await userEvent.click(screen.getByRole('button', { name: 'Accept' }));
 
     await waitFor(() => {
@@ -159,8 +171,9 @@ describe('AppHome - accept invite', () => {
     mockListMyGroups.mockResolvedValue([]);
 
     render(<AppHome user={mockUser} />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Accept' })).toBeInTheDocument());
+    await waitFor(() => expect(mockListMyGroups).toHaveBeenCalled());
 
+    await openGroupsModal(/Pick a group/i);
     await userEvent.click(screen.getByRole('button', { name: 'Accept' }));
 
     await waitFor(() => {
@@ -183,8 +196,9 @@ describe('AppHome - accept invite', () => {
     mockAcceptInvite.mockRejectedValue(new Error('Already a member'));
 
     render(<AppHome user={mockUser} />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Accept' })).toBeInTheDocument());
+    await waitFor(() => expect(mockListMyGroups).toHaveBeenCalled());
 
+    await openGroupsModal(/Pick a group/i);
     await userEvent.click(screen.getByRole('button', { name: 'Accept' }));
 
     await waitFor(() => {
@@ -222,6 +236,33 @@ describe('AppHome - invite modal', () => {
 
     await waitFor(() => {
       expect(mockInviteMember).toHaveBeenCalledWith('g-1', 'bob@example.com', 'Bob');
+    });
+  });
+});
+
+describe('AppHome - join invite link', () => {
+  it('joins the group from the invite code and refreshes the dashboard', async () => {
+    mockJoinGroupByInviteCode.mockResolvedValue({ groupId: 'g-2', groupName: 'Summer Crew' });
+    mockListMyGroups.mockResolvedValueOnce([]).mockResolvedValue([{ ...mockGroup, id: 'g-2', name: 'Summer Crew' }]);
+
+    render(<AppHome user={mockUser} joinInviteCode="abc123" />);
+
+    await waitFor(() => {
+      expect(mockJoinGroupByInviteCode).toHaveBeenCalledWith(mockUser, 'abc123');
+    });
+    await waitFor(() => {
+      expect(screen.getByText(/You joined Summer Crew/)).toBeInTheDocument();
+    });
+    expect(window.location.hash).toBe('#/app');
+  });
+
+  it('shows an error notice when the invite link join fails', async () => {
+    mockJoinGroupByInviteCode.mockRejectedValue(new Error('This invite link is invalid or no longer works.'));
+
+    render(<AppHome user={mockUser} joinInviteCode="badcode" />);
+
+    await waitFor(() => {
+      expect(screen.getByText('This invite link is invalid or no longer works.')).toBeInTheDocument();
     });
   });
 });

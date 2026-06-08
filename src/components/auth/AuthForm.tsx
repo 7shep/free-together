@@ -11,6 +11,11 @@ interface AuthFormProps {
   onSuccess: () => void;
 }
 
+function buildEmailRedirectHash() {
+  const hash = window.location.hash.trim();
+  return hash.startsWith('#/join/') ? hash : '#/app';
+}
+
 export default function AuthForm({ mode, onModeChange, onSuccess }: AuthFormProps) {
   const isLogin = mode === 'login';
   const [fullName, setFullName] = useState('');
@@ -56,7 +61,7 @@ export default function AuthForm({ mode, onModeChange, onSuccess }: AuthFormProp
           data: {
             full_name: fullName.trim(),
           },
-          emailRedirectTo: `${window.location.origin}${window.location.pathname}#/app`,
+          emailRedirectTo: `${window.location.origin}${window.location.pathname}${buildEmailRedirectHash()}`,
         },
       });
 

@@ -20,6 +20,7 @@ import { buildCalendarWindow } from '../../lib/calendar';
 import { requireSupabase } from '../../lib/supabase';
 import DashboardCalendar from './dashboard/DashboardCalendar';
 import styles from './dashboard/Dashboard.module.css';
+import GroupsModal from './dashboard/GroupsModal';
 import InviteModal from './dashboard/InviteModal';
 import DashboardSidebar from './dashboard/DashboardSidebar';
 import DashboardTopbar from './dashboard/DashboardTopbar';
@@ -124,6 +125,7 @@ export default function AppHome({ joinInviteCode, user }: AppHomeProps) {
   const [createGroupName, setCreateGroupName] = useState('');
   const [inviteName, setInviteName] = useState('');
   const [inviteEmail, setInviteEmail] = useState('');
+  const [groupsModalOpen, setGroupsModalOpen] = useState(false);
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
   const [quickAddOpen, setQuickAddOpen] = useState(false);
   const [quickAddDayKey, setQuickAddDayKey] = useState('');
@@ -136,7 +138,6 @@ export default function AppHome({ joinInviteCode, user }: AppHomeProps) {
   const [hiddenMemberIds, setHiddenMemberIds] = useState<Set<string>>(new Set());
   const [activeWindow, setActiveWindow] = useState<RankedWindow | null>(null);
 
-  const groupsSectionRef = useRef<HTMLDivElement>(null);
   const mainScrollRef = useRef<HTMLDivElement>(null);
   const joinedInviteCodeRef = useRef<string | null>(null);
 
@@ -368,6 +369,10 @@ export default function AppHome({ joinInviteCode, user }: AppHomeProps) {
 
   const pendingGroupInvites = (snapshot?.invites ?? []).filter((invite) => invite.status === 'pending');
 
+  const openGroupsModal = () => {
+    setGroupsModalOpen(true);
+  };
+
   const openInviteModal = () => {
     if (!selectedGroupId) {
       setNotice({ tone: 'error', text: 'Create or select a group before you invite someone.' });
@@ -388,6 +393,7 @@ export default function AppHome({ joinInviteCode, user }: AppHomeProps) {
       setNotice({ tone: 'success', text: 'Group created. Start inviting friends or add your own schedule.' });
       setToast('Group created');
       await refreshDashboard(groupId);
+      setGroupsModalOpen(false);
       setInviteModalOpen(true);
     } catch (error) {
       setNotice({
@@ -492,6 +498,7 @@ export default function AppHome({ joinInviteCode, user }: AppHomeProps) {
       setNotice({ tone: 'success', text: 'Invite accepted. That group is now in your dashboard.' });
       setToast('Invite accepted');
       await refreshDashboard(joinedGroupId);
+      setGroupsModalOpen(false);
     } catch (error) {
       setNotice({
         tone: 'error',
@@ -741,17 +748,16 @@ export default function AppHome({ joinInviteCode, user }: AppHomeProps) {
   return (
     <div className={styles.appShell}>
       <DashboardTopbar
-        groups={groups}
         groupName={selectedGroup?.name ?? 'Pick a group'}
         groupSubtitle={selectedGroup ? `${visibleMembers.length} visible members` : user.email ?? 'Signed in'}
+        groupsOpen={groupsModalOpen}
         inviteDisabled={!selectedGroupId}
         members={members}
-        selectedGroupId={selectedGroupId}
         weekLabel={weekLabel}
         onNextWeek={() => setWeekStart((current) => shiftWeek(current, 1))}
+        onOpenGroups={openGroupsModal}
         onOpenInvite={openInviteModal}
         onPrevWeek={() => setWeekStart((current) => shiftWeek(current, -1))}
-        onSelectGroup={setSelectedGroupId}
         onSignOut={handleSignOut}
         userLabel={initials(user.email ?? 'Y')}
       />
@@ -760,32 +766,21 @@ export default function AppHome({ joinInviteCode, user }: AppHomeProps) {
         <DashboardSidebar
           calendarDays={calendarDays}
           clearDisabled={!selectedGroupId || workingKey === 'clear-week'}
-          createBusy={workingKey === 'create-group'}
-          createGroupName={createGroupName}
-          groups={groups}
-          groupsSectionRef={groupsSectionRef}
           hiddenMemberIds={hiddenMemberIds}
-          incomingInvites={incomingInvites}
           members={members}
           quickAddBusy={workingKey === 'quick-add'}
           quickAddDayKey={quickAddDayKey}
           quickAddOpen={quickAddOpen}
           quickAddSlotIndex={quickAddSlotIndex}
           rankedWindows={rankedWindows}
-          selectedGroup={selectedGroup}
           selectedGroupId={selectedGroupId}
-          workingInviteId={workingKey?.startsWith('accept-') ? workingKey.replace('accept-', '') : null}
-          onAcceptInvite={handleAcceptInvite}
           onClearWeek={handleClearWeek}
-          onCreateGroup={handleCreateGroup}
-          onCreateGroupNameChange={setCreateGroupName}
           onOpenWindow={setActiveWindow}
           onQuickAddDayChange={setQuickAddDayKey}
           onQuickAddOpenChange={setQuickAddOpen}
           onQuickAddSave={handleQuickAdd}
           onQuickAddSlotIndexChange={setQuickAddSlotIndex}
           onOpenScheduleModal={openScheduleModal}
-          onSelectGroup={setSelectedGroupId}
           onToggleMember={handleToggleMember}
         />
 
@@ -831,6 +826,24 @@ export default function AppHome({ joinInviteCode, user }: AppHomeProps) {
         openWindow={activeWindow}
         onClose={() => setActiveWindow(null)}
         onConfirm={() => void handleShareWindow()}
+      />
+
+      <GroupsModal
+        createBusy={workingKey === 'create-group'}
+        createGroupName={createGroupName}
+        groups={groups}
+        incomingInvites={incomingInvites}
+        open={groupsModalOpen}
+        selectedGroupId={selectedGroupId}
+        workingInviteId={workingKey?.startsWith('accept-') ? workingKey.replace('accept-', '') : null}
+        onAcceptInvite={(inviteId) => void handleAcceptInvite(inviteId)}
+        onClose={() => setGroupsModalOpen(false)}
+        onCreateGroup={() => void handleCreateGroup()}
+        onCreateGroupNameChange={setCreateGroupName}
+        onSelectGroup={(groupId) => {
+          setSelectedGroupId(groupId);
+          setGroupsModalOpen(false);
+        }}
       />
 
       <InviteModal

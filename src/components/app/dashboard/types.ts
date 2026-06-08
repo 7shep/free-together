@@ -19,47 +19,35 @@ export interface RankedWindow {
 export interface DashboardSidebarProps {
   calendarDays: CalendarDay[];
   clearDisabled: boolean;
-  createBusy: boolean;
-  createGroupName: string;
-  groups: GroupListItem[];
-  groupsSectionRef: MutableRefObject<HTMLDivElement | null>;
   hiddenMemberIds: Set<string>;
-  incomingInvites: GroupInvite[];
   members: DecoratedMember[];
   quickAddBusy: boolean;
   quickAddDayKey: string;
   quickAddOpen: boolean;
   quickAddSlotIndex: number;
   rankedWindows: RankedWindow[];
-  selectedGroup: GroupListItem | null;
   selectedGroupId: string | null;
-  workingInviteId: string | null;
-  onAcceptInvite: (inviteId: string) => void;
   onClearWeek: () => void;
-  onCreateGroup: () => void;
-  onCreateGroupNameChange: (value: string) => void;
   onOpenWindow: (window: RankedWindow) => void;
   onQuickAddDayChange: (value: string) => void;
   onQuickAddOpenChange: (nextOpen: boolean) => void;
   onQuickAddSave: () => void;
   onQuickAddSlotIndexChange: (value: number) => void;
   onOpenScheduleModal: () => void;
-  onSelectGroup: (groupId: string) => void;
   onToggleMember: (memberId: string) => void;
 }
 
 export interface DashboardTopbarProps {
-  groups: GroupListItem[];
   groupName: string;
   groupSubtitle: string;
+  groupsOpen: boolean;
   inviteDisabled: boolean;
   members: DecoratedMember[];
-  selectedGroupId: string | null;
   weekLabel: string;
   onNextWeek: () => void;
+  onOpenGroups: () => void;
   onOpenInvite: () => void;
   onPrevWeek: () => void;
-  onSelectGroup: (groupId: string) => void;
   onSignOut: () => void;
   userLabel: string;
 }
@@ -100,6 +88,21 @@ export interface InviteModalProps {
   onInviteMember: () => void;
   onInviteNameChange: (value: string) => void;
   onShareInviteLink: () => void;
+}
+
+export interface GroupsModalProps {
+  createBusy: boolean;
+  createGroupName: string;
+  groups: GroupListItem[];
+  incomingInvites: GroupInvite[];
+  open: boolean;
+  selectedGroupId: string | null;
+  workingInviteId: string | null;
+  onAcceptInvite: (inviteId: string) => void;
+  onClose: () => void;
+  onCreateGroup: () => void;
+  onCreateGroupNameChange: (value: string) => void;
+  onSelectGroup: (groupId: string) => void;
 }
 
 export interface WeekCalendarProps {

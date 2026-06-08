@@ -913,9 +913,18 @@
   text-align: left;
 }
 
+.groupsModalCard {
+  width: min(100%, 520px);
+  text-align: left;
+}
+
 .inviteModalCard {
   width: min(100%, 500px);
   text-align: left;
+}
+
+.groupsModalIcon {
+  background: var(--sun);
 }
 
 .scheduleModalIcon {
