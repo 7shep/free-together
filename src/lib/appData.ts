@@ -356,3 +356,26 @@ export async function clearAvailabilityRange(groupId: string, userId: string, ra
 
   if (error) throw error;
 }
+
+export async function revokeInvite(inviteId: string) {
+  const client = requireSupabase();
+
+  const { error } = await client
+    .from('group_invites')
+    .update({ status: 'revoked' })
+    .eq('id', inviteId);
+
+  if (error) throw error;
+}
+
+export async function leaveGroup(groupId: string, userId: string) {
+  const client = requireSupabase();
+
+  const { error } = await client
+    .from('group_members')
+    .delete()
+    .eq('group_id', groupId)
+    .eq('user_id', userId);
+
+  if (error) throw error;
+}
