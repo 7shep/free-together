@@ -10,6 +10,8 @@ import {
   inviteMember,
   setAvailability,
   clearAvailabilityRange,
+  revokeInvite,
+  leaveGroup,
 } from '../lib/appData';
 import { requireSupabase } from '../lib/supabase';
 
@@ -382,5 +384,48 @@ describe('clearAvailabilityRange', () => {
     mockRequireSupabase.mockReturnValue({ from: vi.fn(() => q) } as any);
 
     await expect(clearAvailabilityRange('g-1', 'user-1', '2026-06-09', '2026-06-15')).rejects.toEqual({ message: 'delete failed' });
+  });
+});
+
+// ─── revokeInvite ─────────────────────────────────────────────────────────────
+
+describe('revokeInvite', () => {
+  it('updates the invite status to revoked', async () => {
+    const q = chain({ data: null, error: null });
+    mockRequireSupabase.mockReturnValue({ from: vi.fn(() => q) } as any);
+
+    await revokeInvite('inv-1');
+
+    expect(q.update).toHaveBeenCalledWith({ status: 'revoked' });
+    expect(q.eq).toHaveBeenCalledWith('id', 'inv-1');
+  });
+
+  it('throws when the update is rejected by the DB', async () => {
+    const q = chain({ data: null, error: { message: 'not owner' } });
+    mockRequireSupabase.mockReturnValue({ from: vi.fn(() => q) } as any);
+
+    await expect(revokeInvite('inv-1')).rejects.toEqual({ message: 'not owner' });
+  });
+});
+
+// ─── leaveGroup ───────────────────────────────────────────────────────────────
+
+describe('leaveGroup', () => {
+  it('deletes the membership row for the given user and group', async () => {
+    const q = chain({ data: null, error: null });
+    mockRequireSupabase.mockReturnValue({ from: vi.fn(() => q) } as any);
+
+    await leaveGroup('g-1', 'user-1');
+
+    expect(q.delete).toHaveBeenCalled();
+    expect(q.eq).toHaveBeenCalledWith('group_id', 'g-1');
+    expect(q.eq).toHaveBeenCalledWith('user_id', 'user-1');
+  });
+
+  it('throws when the DB rejects the delete (e.g. user is the owner)', async () => {
+    const q = chain({ data: null, error: { message: 'owners cannot leave' } });
+    mockRequireSupabase.mockReturnValue({ from: vi.fn(() => q) } as any);
+
+    await expect(leaveGroup('g-1', 'user-1')).rejects.toEqual({ message: 'owners cannot leave' });
   });
 });
