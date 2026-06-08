@@ -41,6 +41,7 @@ export default function DashboardSidebar({
   onQuickAddOpenChange,
   onQuickAddSave,
   onQuickAddSlotIndexChange,
+  onOpenScheduleModal,
   onSelectGroup,
   onShareInviteLink,
   onShowInviteFormChange,
@@ -202,9 +203,14 @@ export default function DashboardSidebar({
       <section className={styles.sidebarSection}>
         <div className={styles.sectionHead}>
           <span>Members</span>
-          <button type="button" onClick={() => onQuickAddOpenChange(!quickAddOpen)}>
-            {quickAddOpen ? 'Hide add time' : '+ Add time'}
-          </button>
+          <div className={styles.sectionActions}>
+            <button type="button" onClick={() => onQuickAddOpenChange(!quickAddOpen)}>
+              {quickAddOpen ? 'Hide add time' : '+ Add time'}
+            </button>
+            <button type="button" onClick={onOpenScheduleModal} disabled={!selectedGroupId}>
+              Add Schedule
+            </button>
+          </div>
         </div>
 
         <div className={styles.memberList}>

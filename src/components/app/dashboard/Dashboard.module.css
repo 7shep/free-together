@@ -57,7 +57,16 @@
   color: var(--ink);
 }
 
+.groupPickerWrap {
+  position: relative;
+  flex: none;
+}
+
 .groupPicker:hover {
+  background: color-mix(in srgb, var(--ink) 6%, transparent);
+}
+
+.groupPickerOpen {
   background: color-mix(in srgb, var(--ink) 6%, transparent);
 }
 
@@ -98,6 +107,78 @@
 .groupChevron {
   color: var(--ink-soft);
   font-size: 0.75rem;
+}
+
+.groupDropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  width: min(320px, 82vw);
+  padding: 10px;
+  background: color-mix(in srgb, var(--surface) 96%, white);
+  border: var(--border) solid var(--ink);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+  display: grid;
+  gap: 8px;
+  z-index: 70;
+}
+
+.groupDropdownItem {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border: var(--border) solid color-mix(in srgb, var(--ink) 14%, transparent);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--bg) 55%, white);
+  color: var(--ink);
+  cursor: pointer;
+  text-align: left;
+}
+
+.groupDropdownItem:hover {
+  background: color-mix(in srgb, var(--ink) 5%, transparent);
+}
+
+.groupDropdownItemActive {
+  background: color-mix(in srgb, var(--mint) 16%, white);
+  border-color: var(--ink);
+}
+
+.groupDropdownText {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.groupDropdownText strong {
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-size: 0.98rem;
+  font-weight: 700;
+}
+
+.groupDropdownText small,
+.groupDropdownEmpty {
+  color: var(--ink-soft);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.groupDropdownCheck {
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--free);
+}
+
+.groupDropdownEmpty {
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--bg) 55%, white);
+  border: var(--border) dashed color-mix(in srgb, var(--ink) 18%, transparent);
 }
 
 .topbarFill {
@@ -265,6 +346,12 @@
   font-weight: 700;
   letter-spacing: 0.07em;
   text-transform: uppercase;
+}
+
+.sectionActions {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .sectionHead button {
@@ -793,6 +880,16 @@
   font-weight: 700;
 }
 
+.modalEyebrow {
+  margin-bottom: 8px;
+  color: var(--ink-soft);
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 .modalTime {
   margin-top: 6px;
   color: var(--ink-soft);
@@ -809,6 +906,44 @@
   display: grid;
   gap: 10px;
   margin-top: 22px;
+}
+
+.scheduleModalCard {
+  width: min(100%, 460px);
+  text-align: left;
+}
+
+.scheduleModalIcon {
+  background: var(--sky);
+}
+
+.scheduleForm {
+  display: grid;
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.scheduleTimeRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.scheduleField {
+  display: grid;
+  gap: 8px;
+}
+
+.scheduleField span,
+.scheduleNote {
+  color: var(--ink-soft);
+  font-size: 0.84rem;
+  font-weight: 600;
+}
+
+.scheduleNote {
+  margin-top: 14px;
+  line-height: 1.45;
 }
 
 @keyframes pulse {
@@ -842,8 +977,12 @@
     padding-bottom: 14px;
   }
 
-  .groupPicker {
+  .groupPickerWrap {
     order: 3;
+    width: 100%;
+  }
+
+  .groupPicker {
     width: 100%;
     max-width: none;
   }
@@ -877,6 +1016,11 @@
   .weekLabel {
     min-width: 108px;
     font-size: 0.88rem;
+  }
+
+  .scheduleTimeRow,
+  .buttonRow {
+    grid-template-columns: 1fr;
   }
 
   .calendarGrid {

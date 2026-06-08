@@ -55,6 +55,7 @@ export interface DashboardSidebarProps {
   onQuickAddOpenChange: (nextOpen: boolean) => void;
   onQuickAddSave: () => void;
   onQuickAddSlotIndexChange: (value: number) => void;
+  onOpenScheduleModal: () => void;
   onSelectGroup: (groupId: string) => void;
   onShareInviteLink: () => void;
   onShowInviteFormChange: (nextOpen: boolean) => void;
@@ -62,15 +63,17 @@ export interface DashboardSidebarProps {
 }
 
 export interface DashboardTopbarProps {
+  groups: GroupListItem[];
   groupName: string;
   groupSubtitle: string;
   inviteDisabled: boolean;
   members: DecoratedMember[];
+  selectedGroupId: string | null;
   weekLabel: string;
   onNextWeek: () => void;
-  onOpenGroups: () => void;
   onOpenInvite: () => void;
   onPrevWeek: () => void;
+  onSelectGroup: (groupId: string) => void;
   onSignOut: () => void;
   userLabel: string;
 }
@@ -80,6 +83,20 @@ export interface LockInModalProps {
   openWindow: RankedWindow | null;
   onClose: () => void;
   onConfirm: () => void;
+}
+
+export interface ScheduleModalProps {
+  calendarDays: CalendarDay[];
+  endTime: string;
+  onClose: () => void;
+  onConfirm: () => void;
+  onDayChange: (value: string) => void;
+  onEndTimeChange: (value: string) => void;
+  onStartTimeChange: (value: string) => void;
+  open: boolean;
+  selectedDayKey: string;
+  startTime: string;
+  submitting: boolean;
 }
 
 export interface WeekCalendarProps {

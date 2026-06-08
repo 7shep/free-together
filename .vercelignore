@@ -1,0 +1,9 @@
+.git
+.gstack
+.claude
+.vercel
+node_modules
+dist
+free-together/chats
+free-together/project
+design.bin

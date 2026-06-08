@@ -23,6 +23,7 @@ import styles from './dashboard/Dashboard.module.css';
 import DashboardSidebar from './dashboard/DashboardSidebar';
 import DashboardTopbar from './dashboard/DashboardTopbar';
 import LockInModal from './dashboard/LockInModal';
+import ScheduleModal from './dashboard/ScheduleModal';
 import type { DecoratedMember, RankedWindow } from './dashboard/types';
 
 interface NoticeState {
@@ -92,6 +93,18 @@ function formatWeekLabel(startDate: Date) {
   return `${startLabel} - ${endLabel}`;
 }
 
+function parseTimeToMinutes(value: string) {
+  const [hoursText = '0', minutesText = '0'] = value.split(':');
+  return Number(hoursText) * 60 + Number(minutesText);
+}
+
+function slotOverlapsShift(slotStart: string, slotEnd: string, shiftStartMinutes: number, shiftEndMinutes: number) {
+  const slotStartMinutes = parseTimeToMinutes(slotStart);
+  const slotEndMinutes = parseTimeToMinutes(slotEnd);
+
+  return slotStartMinutes < shiftEndMinutes && slotEndMinutes > shiftStartMinutes;
+}
+
 interface AppHomeProps {
   joinInviteCode?: string;
   user: User;
@@ -114,6 +127,10 @@ export default function AppHome({ joinInviteCode, user }: AppHomeProps) {
   const [quickAddOpen, setQuickAddOpen] = useState(false);
   const [quickAddDayKey, setQuickAddDayKey] = useState('');
   const [quickAddSlotIndex, setQuickAddSlotIndex] = useState(0);
+  const [scheduleModalOpen, setScheduleModalOpen] = useState(false);
+  const [scheduleDayKey, setScheduleDayKey] = useState('');
+  const [workStartTime, setWorkStartTime] = useState('09:00');
+  const [workEndTime, setWorkEndTime] = useState('17:00');
   const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date()));
   const [hiddenMemberIds, setHiddenMemberIds] = useState<Set<string>>(new Set());
   const [activeWindow, setActiveWindow] = useState<RankedWindow | null>(null);
@@ -142,6 +159,12 @@ export default function AppHome({ joinInviteCode, user }: AppHomeProps) {
       setQuickAddDayKey(calendarDays[0]?.dateKey ?? '');
     }
   }, [calendarDays, quickAddDayKey]);
+
+  useEffect(() => {
+    if (!calendarDays.some((day) => day.dateKey === scheduleDayKey)) {
+      setScheduleDayKey(calendarDays[0]?.dateKey ?? '');
+    }
+  }, [calendarDays, scheduleDayKey]);
 
   useEffect(() => {
     if (mainScrollRef.current) {
@@ -344,10 +367,6 @@ export default function AppHome({ joinInviteCode, user }: AppHomeProps) {
   );
 
   const pendingGroupInvites = (snapshot?.invites ?? []).filter((invite) => invite.status === 'pending');
-
-  const openGroupsPanel = () => {
-    groupsSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  };
 
   const openInvitePanel = () => {
     if (!selectedGroupId) {
@@ -600,6 +619,88 @@ export default function AppHome({ joinInviteCode, user }: AppHomeProps) {
     }
   };
 
+  const openScheduleModal = () => {
+    if (!selectedGroupId) {
+      setNotice({ tone: 'error', text: 'Create or select a group before adding your work schedule.' });
+      return;
+    }
+
+    setScheduleModalOpen(true);
+  };
+
+  const handleApplySchedule = async () => {
+    if (!selectedGroupId) return;
+
+    const shiftStartMinutes = parseTimeToMinutes(workStartTime);
+    const shiftEndMinutes = parseTimeToMinutes(workEndTime);
+
+    if (shiftEndMinutes <= shiftStartMinutes) {
+      setNotice({ tone: 'error', text: 'The end time needs to be later than the start time.' });
+      return;
+    }
+
+    const day = calendarDays.find((item) => item.dateKey === scheduleDayKey) ?? calendarDays[0];
+    if (!day) return;
+
+    setWorkingKey('apply-schedule');
+
+    try {
+      await clearAvailabilityRange(selectedGroupId, user.id, day.dateKey, day.dateKey);
+
+      const freeSlots = day.slots.filter(
+        (slot) => !slotOverlapsShift(slot.startsAt, slot.endsAt, shiftStartMinutes, shiftEndMinutes),
+      );
+
+      await Promise.all(
+        freeSlots.map((slot) =>
+          setAvailability(
+            selectedGroupId,
+            user.id,
+            slot.dateKey,
+            slot.slotIndex,
+            slot.startsAt,
+            slot.endsAt,
+            true,
+          ),
+        ),
+      );
+
+      setSnapshot((current) => {
+        if (!current) return current;
+
+        const nextAvailability = current.availability.filter(
+          (item) => !(item.userId === user.id && item.slotDate === day.dateKey),
+        );
+
+        return {
+          ...current,
+          availability: [
+            ...nextAvailability,
+            ...freeSlots.map((slot) => ({
+              slotDate: slot.dateKey,
+              slotIndex: slot.slotIndex,
+              userId: user.id,
+            })),
+          ],
+        };
+      });
+
+      setScheduleModalOpen(false);
+      setNotice({
+        tone: 'success',
+        text: `Saved your work hours for ${day.full}. Free time outside that shift is now on the calendar.`,
+      });
+      setToast('Schedule added');
+    } catch (error) {
+      setNotice({
+        tone: 'error',
+        text: messageFromError(error, 'Unable to save that work schedule right now.'),
+      });
+    } finally {
+      setWorkingKey(null);
+    }
+  };
+
   const handleToggleMember = (memberId: string) => {
     setHiddenMemberIds((current) => {
       const next = new Set(current);
@@ -643,15 +744,17 @@ export default function AppHome({ joinInviteCode, user }: AppHomeProps) {
   return (
     <div className={styles.appShell}>
       <DashboardTopbar
+        groups={groups}
         groupName={selectedGroup?.name ?? 'Pick a group'}
         groupSubtitle={selectedGroup ? `${visibleMembers.length} visible members` : user.email ?? 'Signed in'}
         inviteDisabled={!selectedGroupId}
         members={members}
+        selectedGroupId={selectedGroupId}
         weekLabel={weekLabel}
         onNextWeek={() => setWeekStart((current) => shiftWeek(current, 1))}
-        onOpenGroups={openGroupsPanel}
         onOpenInvite={openInvitePanel}
         onPrevWeek={() => setWeekStart((current) => shiftWeek(current, -1))}
+        onSelectGroup={setSelectedGroupId}
         onSignOut={handleSignOut}
         userLabel={initials(user.email ?? 'Y')}
       />
@@ -696,6 +799,7 @@ export default function AppHome({ joinInviteCode, user }: AppHomeProps) {
           onQuickAddOpenChange={setQuickAddOpen}
           onQuickAddSave={handleQuickAdd}
           onQuickAddSlotIndexChange={setQuickAddSlotIndex}
+          onOpenScheduleModal={openScheduleModal}
           onSelectGroup={setSelectedGroupId}
           onShareInviteLink={handleShareInviteLink}
           onShowInviteFormChange={setShowInviteForm}
@@ -744,6 +848,23 @@ export default function AppHome({ joinInviteCode, user }: AppHomeProps) {
         openWindow={activeWindow}
         onClose={() => setActiveWindow(null)}
         onConfirm={() => void handleShareWindow()}
+      />
+
+      <ScheduleModal
+        calendarDays={calendarDays}
+        endTime={workEndTime}
+        onClose={() => {
+          if (workingKey === 'apply-schedule') return;
+          setScheduleModalOpen(false);
+        }}
+        onConfirm={() => void handleApplySchedule()}
+        onDayChange={setScheduleDayKey}
+        onEndTimeChange={setWorkEndTime}
+        onStartTimeChange={setWorkStartTime}
+        open={scheduleModalOpen}
+        selectedDayKey={scheduleDayKey}
+        startTime={workStartTime}
+        submitting={workingKey === 'apply-schedule'}
       />
     </div>
   );
